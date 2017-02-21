@@ -1,0 +1,2 @@
+- logic: digest
+  glob: javascripts/{stats,social}.js

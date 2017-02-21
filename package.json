@@ -1,0 +1,23 @@
+{
+  "name": "jcc-bomb-threats",
+  "version": "1.0.0",
+  "description": "Mapping bomb threats at Jewish community centers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@git.huffpo.net:huffpostdata/jcc-bomb-threats.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "hpd-asset-pipeline": "0.0.5",
+    "in-memory-website": "0.0.2"
+  },
+  "devDependencies": {
+    "mapshaper": "^0.4.11",
+    "svgo": "^0.7.2"
+  }
+}

@@ -1,0 +1,33 @@
+{
+	"type": "FeatureCollection",
+	"features": [
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [ -80.1968, 26.3586 ]
+			},
+			"properties": {
+				"city": "Boca Raton",
+				"state": "Florida",
+				"threats": [
+					{ "date": "2017-01-09", "place": "Adolph and Rose Levis JCC" }
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [ -82.1210, 33.5728 ]
+			},
+			"properties": {
+				"city": "Augusta",
+				"state": "Georgia",
+				"threats": [
+					{ "date": "2017-01-09", "place": "Augusta Jewish Community Center" }
+				]
+			}
+		}
+	]
+}
