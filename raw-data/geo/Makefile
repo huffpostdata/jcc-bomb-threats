@@ -34,8 +34,5 @@ tmp/jcc-threat-map.svg: tmp/usa-land.shp tmp/states-mesh.shp ../../data/jcc-thre
 		-svg-style r=20 \
 		-o $@ format=svg precision=1 width=2000 margin=5
 
-tmp/jcc-threat-map-styled.svg: tmp/jcc-threat-map.svg
-		awk '!x{x=sub("\">","\"><defs><style>#jcc-threat-map1{fill:#eaeaea;stroke:none;}#jcc-threat-map2{fill:none;stroke:white;stroke-width:2;}#jcc-threat-map3{fill:#faaaaa;stroke:white}</style></defs>")}1' < $< | awk '{ sub(" baseProfile=\"tiny\"", "");print }' > $@
-
-../../data/jcc-threat-map.svg: tmp/jcc-threat-map-styled.svg
+../../data/jcc-threat-map.svg: tmp/jcc-threat-map.svg
 	$(SVGO) --disable=cleanupIDs $< $@

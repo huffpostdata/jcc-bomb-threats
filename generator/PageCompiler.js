@@ -99,10 +99,11 @@ module.exports = class PageCompiler {
           throw new Error(`Page '${page.path}' specifies model '${page.model}', but that is undefined. Please set '${page.model}' in Database, or change the page definition.`)
         }
         model = this.database[page.model]
+        const onePath = path.replace(/:(\w+)/, (_, name) => encodeURIComponent(model[name]))
+        out.push(this.render(onePath, page, { model: model }))
       } else {
-        model = null
+        out.push(this.render(path, page, {}))
       }
-      out.push(this.render(path, page, { model: model }))
     }
 
     return out

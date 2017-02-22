@@ -1,0 +1,8 @@
+---
+var div = document.querySelector('#hpd-jcc-threats');
+if (!div) throw new Error('$!{'Missing <div id="#hpd-jcc-threats">'}');
+
+var svg = $!{JSON.stringify(data.model.svg)};
+
+div.innerHTML = svg.html;
+---

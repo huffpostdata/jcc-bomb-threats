@@ -1,2 +1,9 @@
-- path: /
-  model: index
+- path: /jcc-threats-:date.js
+  model: jcc-threats
+  template: jcc-threats.js
+  headers:
+    Content-Type: application/javascript; charset=utf-8
+
+- path: /test/jcc-threats-:date
+  model: jcc-threats
+  template: test/jcc-threats
