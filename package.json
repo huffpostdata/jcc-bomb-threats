@@ -16,10 +16,12 @@
     "csv-parse": "^1.2.0",
     "google-drive-console-download": "^1.2.0",
     "in-memory-website": "0.0.2",
+    "kdbush": "^1.0.1",
     "mapshaper": "^0.4.12",
     "marko": "^3.14.2",
     "node-sass": "^4.5.0",
-    "svgo": "^0.7.2"
+    "svgo": "^0.7.2",
+    "xmldoc": "^1.0.0"
   },
   "devDependencies": {
     "chokidar": "^1.6.1",

@@ -1,9 +1,14 @@
 const child_process = require('child_process')
 const fs = require('fs')
 const sass = require('node-sass')
+const svgo = require('svgo')
 const csv_parse = require('csv-parse/lib/sync')
+const kdbush = require('kdbush')
+const xmldoc = require('xmldoc')
+const svgoConvertPathData = require('./svgo/convertPathData').fn
 
-const filename = `${__dirname}/../data/jcc-threat-map.svg`
+const ClusterRadius = 70
+const CityRadius = 30
 
 function loadCss(filePath) {
   return sass.renderSync({
@@ -44,6 +49,8 @@ function loadThreatenedCities() {
           if (row[header].length > 0) {
             threats.push({
               date: header,
+              city: row.CITY,
+              stateAbbreviation: row.STATE, // TODO convert to abbreviation
               place: row['JCC NAME']
             })
           }
@@ -53,8 +60,6 @@ function loadThreatenedCities() {
 
     const city = {
       id: id,
-      city: cityRows[0].CITY,
-      stateAbbreviation: cityRows[0].STATE, // TODO convert to abbreviation
       threats: threats
     }
     cities.push(city)
@@ -139,38 +144,137 @@ function runMapshaper() {
   )
 }
 
-function formatCities(svg, cities) {
+function rewriteCities(svg, cities) {
   const idToCity = {}
   for (const city of loadThreatenedCities()) {
     idToCity[city.id] = city
   }
 
-  const idRegex = / id="([^"]+)"/
-  const xRegex = / cx="([^"]+)"/
-  const yRegex = / cy="([^"]+)"/
+  function circleToThreats(circle) {
+    const id = circle.attr.id
+    const x = parseFloat(circle.attr.cx)
+    const y = parseFloat(circle.attr.cy)
 
-  return svg.replace(/<circle([^>]*)\/>/g, (_, attributes) => {
-    const idMatch = idRegex.exec(attributes)
-    if (!idMatch) throw new Error(`Circle '${_}' is missing an 'id' attribute`)
-    const x = parseFloat(xRegex.exec(attributes)[1])
-    const y = parseFloat(yRegex.exec(attributes)[1])
-    const city = idToCity[idMatch[1]]
-    if (!city) throw new Error(`Could not match city ${idMatch[1]}`)
+    const city = idToCity[id]
+    if (!city) throw new Error(`Could not match city ${id}`)
 
-    const circle = `<circle cx="${x}" cy="${y}" r="20"/>`
-    const text = city.threats.length === 1 ? '' : `<text x="${x}" y="${y}">${city.threats.length}</text>`
-    const desc = `<desc>${JSON.stringify(city)}</desc>`
-    return `<g>${circle}${text}${desc}`
-  })
+    return city.threats.map(threat => Object.assign({ x: x, y: y }, threat))
+  }
+
+  function clusterThreats(threats, r) {
+    // Simple algo:
+    // 1. Sort points by how many points are near them.
+    // 2. Go down the list, clustering at each point if applicable.
+    //
+    // Step 1 should help us avoid the (unlikely?) case in which we pick a point
+    // a bit far from a cluster, and that divides up the cluster. It's a step
+    // Supercluster and Leaflet Clusterer don't take, because they're optimized
+    // for speed.
+
+    // 0. Keep scratchpad; don't write anything into the passed `threats`
+    const points = threats.map(threat => { return { x: threat.x, y: threat.y, threat: threat } })
+
+    // 0. Create index, with its fantastic within() method.
+    const index = kdbush(points, p => p.x, p => p.y, 10, Int32Array)
+
+    // 1. Sort threats from nearest-a-cluster to farthest-from-a-cluster
+    for (const point of points) {
+      point.nNear = index.within(point.x, point.y, r).length
+    }
+    const sortedPoints = points.slice().sort((a, b) => b.nNear - a.nNear)
+
+    // 2. Iterate: build a cluster at each threat that hasn't been seen yet
+    const clusters = [] // Array of { xSum, ySum, threats }
+    for (const point of sortedPoints) {
+      if (point.visited) continue
+      point.visited = true
+
+      const cluster = { xSum: point.x, ySum: point.y, threats: [ point.threat ] }
+
+      for (const closePointIndex of index.within(point.x, point.y, r)) {
+        const closePoint = points[closePointIndex]
+        if (closePoint.visited) continue
+        closePoint.visited = true
+        cluster.xSum += closePoint.x
+        cluster.ySum += closePoint.y
+        cluster.threats.push(closePoint.threat)
+      }
+
+      clusters.push(cluster)
+    }
+
+    // 3. Calculate the weighted x/y for each cluster
+    return clusters.map(cluster => {
+      return {
+        x: Math.round(cluster.xSum / cluster.threats.length),
+        y: Math.round(cluster.ySum / cluster.threats.length),
+        threats: cluster.threats
+      }
+    })
+  }
+
+  function clusterToG(cluster) {
+    // xmldoc wasn't designed to let us edit the tree. Whatevs -- this isn't complex.
+    function XmlElement(name, attr, children) {
+      this.name = name
+      this.attr = attr || {}
+      this.children = children || []
+    }
+    Object.assign(XmlElement.prototype, xmldoc.XmlDocument.prototype) // toStringWithIndent()
+
+    const children = [
+      new XmlElement(
+        'circle',
+        {
+          cx: String(cluster.x),
+          cy: String(cluster.y),
+          r: String(CityRadius)
+        }
+      )
+    ]
+
+    if (cluster.threats.length !== 1) {
+      children.push(new XmlElement(
+        'text',
+        {
+          x: String(cluster.x),
+          y: String(cluster.y)
+        },
+        [ String(cluster.threats.length) ]
+      ))
+    }
+
+    children.push(new XmlElement(
+      'desc', {}, [ JSON.stringify(cluster.threats) ]
+    ))
+
+    return new XmlElement('g', {}, children)
+  }
+
+  const xml = new xmldoc.XmlDocument(svg)
+  const cityG = xml.childWithAttribute('id', 'cities')
+  const threatArrays = [].concat(...cityG.children.map(circleToThreats))
+  const clusters = clusterThreats(threatArrays, ClusterRadius)
+
+  cityG.children = clusters.map(clusterToG)
+  return xml.toString({ compressed: true })
+}
+
+function compressSvg(svg) {
+  // SVGO is the bomb, but it's too heavy. This pilfers the nice bit.
+  return svg
+    .replace(/\s+</g, '<')
+    .replace(/ d="([^"]+)"/g, (_, d) => ` d="${svgoConvertPathData(d, {})}"`)
 }
 
 function loadSvg() {
   const svg = runMapshaper()
 
+  const compressed = compressSvg(svg)
+
+  const withCities = rewriteCities(compressed, loadCities())
+
   const css = loadCss(`${__dirname}/../data/svg-styles.scss`)
-
-  const withCities = formatCities(svg, loadCities())
-
   const withStyle = withCities.replace('baseProfile="tiny"', 'baseProfile="basic"')
     .replace('<g', `<defs><style>${css}</style></defs><g`)
 
@@ -182,7 +286,7 @@ function loadSvg() {
 function svgToAspectRatio(svg) {
   const viewBoxM = /\sviewBox="0 0 (\d+) (\d+)"/.exec(svg)
   if (!viewBoxM) {
-    throw new Error(`Could not read viewBox from SVG in ${filename}`)
+    throw new Error(`Could not read viewBox from SVG`)
   }
   const width = +viewBoxM[1]
   const height = +viewBoxM[2]
