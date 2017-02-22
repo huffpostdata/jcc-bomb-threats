@@ -1,21 +1,33 @@
 MAPSHAPER := ../../node_modules/.bin/mapshaper
 SVGO := ../../node_modules/.bin/svgo
-SIMPLIFY := planar resolution=1990x1990 stats
 
-all: ../../data/jcc-threat-map.svg
+all: ../../data/jcc-threat-map.topojson ../../data/cities.geojson
 
 statesp010g.shp_nt00938.tar.gz:
-	curl -s https://prd-tnm.s3.amazonaws.com/StagedProducts/Small-scale/data/Boundaries/statesp010g.shp_nt00938.tar.gz > $@.1
-	mv $@.1 $@
+	curl -s https://prd-tnm.s3.amazonaws.com/StagedProducts/Small-scale/data/Boundaries/statesp010g.shp_nt00938.tar.gz > $@
+
+citiesx010g_shp_nt00962.tar.gz:
+	curl -s https://prd-tnm.s3.amazonaws.com/StagedProducts/Small-scale/data/Boundaries/citiesx010g_shp_nt00962.tar.gz > $@
 
 tmp/statesp010g.shp: statesp010g.shp_nt00938.tar.gz
 	mkdir -p tmp
-	(cd tmp && tar zmxf ../statesp010g.shp_nt00938.tar.gz)
+	(cd tmp && tar zmxf ../$<)
 
 tmp/states-land.shp: tmp/statesp010g.shp
 	$(MAPSHAPER) $< encoding=utf-8 no-topology \
 		-filter 'TYPE === "Land" && STATE_ABBR !== "PR" && STATE_ABBR !== "VI"' \
 		-o $@
+
+tmp/citiesx010g.shp: citiesx010g_shp_nt00962.tar.gz
+	mkdir -p tmp
+	(cd tmp && tar zmxf ../$<)
+
+../../data/cities.geojson: tmp/citiesx010g.shp
+	$(MAPSHAPER) $< encoding=utf-8 \
+		-filter 'POP_2010 >= 5000' \
+		-each 'id = NAME + " " + STATE' \
+		-filter-fields id \
+		-o $@ precision=0.0001
 
 tmp/states-mesh.shp: tmp/states-land.shp
 	$(MAPSHAPER) $< encoding=utf-8 \
@@ -27,12 +39,10 @@ tmp/usa-land.shp: tmp/states-land.shp
 		-dissolve \
 		-o $@
 
-tmp/jcc-threat-map.svg: tmp/usa-land.shp tmp/states-mesh.shp ../../data/jcc-threats.geojson
+../../data/jcc-threat-map.topojson: tmp/usa-land.shp tmp/states-mesh.shp
 	$(MAPSHAPER) $^ combine-files \
-		-proj albersusa \
-		-simplify $(SIMPLIFY) \
-		-svg-style r=20 \
-		-o $@ format=svg precision=1 width=2000 margin=5
+		-rename-layers usa-land,states-mesh \
+		-o $@
 
 ../../data/jcc-threat-map.svg: tmp/jcc-threat-map.svg
 	$(SVGO) --disable=cleanupIDs $< $@

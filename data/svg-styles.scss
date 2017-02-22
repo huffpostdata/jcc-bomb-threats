@@ -1,16 +1,26 @@
-.jcc-threat-map1 {
+.states {
   fill: white;
   stroke: #6d6e71;
   stroke-width: 1;
 }
 
-.jcc-threat-map2 {
+.mesh {
   fill: white;
   stroke: #6d6e71;
   stroke-width: 1;
 }
 
-.jcc-threat-map3 {
-  fill: #e34433;
-  stroke: white
+.cities {
+  circle {
+    fill: #e34433;
+    stroke: white
+  }
+  text {
+    font-family: NotoNashkArabic, ProximaNova, "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
+    font-size: 25px;
+    fill: white;
+    stroke: none;
+    text-anchor: middle;
+    alignment-baseline: central;
+  }
 }

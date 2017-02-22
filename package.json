@@ -4,7 +4,7 @@
   "description": "Mapping bomb threats at Jewish community centers",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "update-google-sheets": "node generator/GoogleSheets.js"
   },
   "repository": {
     "type": "git",
@@ -13,14 +13,16 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "csv-parse": "^1.2.0",
+    "google-drive-console-download": "^1.2.0",
     "in-memory-website": "0.0.2",
+    "mapshaper": "^0.4.12",
     "marko": "^3.14.2",
-    "node-sass": "^4.5.0"
+    "node-sass": "^4.5.0",
+    "svgo": "^0.7.2"
   },
   "devDependencies": {
     "chokidar": "^1.6.1",
-    "hpd-asset-pipeline": "0.0.5",
-    "mapshaper": "^0.4.11",
-    "svgo": "^0.7.2"
+    "hpd-asset-pipeline": "0.0.5"
   }
 }
