@@ -18,7 +18,11 @@ function loadThreatenedCities() {
   const rows = csv_parse(tsv, { delimiter: '\t', columns: true })
 
   function rowToId(row) {
-    return `${row.CITY} ${row.STATE}`
+    if (row.CITY === 'Newton Centre' && row.STATE === 'MA') {
+      return 'Newton MA'
+    } else {
+      return `${row.CITY} ${row.STATE}`
+    }
   }
 
   const citiesSet = {}
@@ -59,8 +63,21 @@ function loadThreatenedCities() {
   return cities
 }
 
+function loadCityGeos() {
+  const usGeos = JSON.parse(fs.readFileSync(`${__dirname}/../data/cities.geojson`)).features
+}
+
 function loadCities() {
-  const cityGeos = JSON.parse(fs.readFileSync(`${__dirname}/../data/cities.geojson`)).features
+  const usGeos = JSON.parse(fs.readFileSync(`${__dirname}/../data/cities.geojson`)).features
+  const caGeos = [
+    {
+      "type": "Feature",
+      "properties": { "id": "London Ontario" },
+      "geometry": { "type": "Point", "coordinates": [ -81.2453, 42.9849 ] }
+    }
+  ]
+
+  const cityGeos = usGeos.concat(caGeos)
 
   const idToGeo = {}
   for (const cityGeo of cityGeos) {
@@ -71,7 +88,7 @@ function loadCities() {
   for (const threatenedCity of loadThreatenedCities()) {
     const geo = idToGeo[threatenedCity.id]
     if (!geo) {
-      console.warn(`Could not find city: '${threatenedCity.id}'`)
+      throw new Error(`Could not find city: '${threatenedCity.id}'`)
     } else {
       features.push(Object.assign({}, geo, {
         properties: Object.assign({}, geo.properties, threatenedCity)

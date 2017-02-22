@@ -22,9 +22,8 @@ tmp/citiesx010g.shp: citiesx010g_shp_nt00962.tar.gz
 	mkdir -p tmp
 	(cd tmp && tar zmxf ../$<)
 
-../../data/cities.geojson: tmp/citiesx010g.shp
+../../data/cities.geojson: tmp/citiesx010g.shp Makefile
 	$(MAPSHAPER) $< encoding=utf-8 \
-		-filter 'POP_2010 >= 5000' \
 		-each 'id = NAME + " " + STATE' \
 		-filter-fields id \
 		-o $@ precision=0.0001
