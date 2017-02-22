@@ -1,5 +1,6 @@
 #hpd-jcc-threats {
   &>.svg-container {
+    position: relative;
     margin: 0;
     padding: 0;
     display: flex;
@@ -10,5 +11,32 @@
       width: 100%;
       height: 100%;
     }
+  }
+  &>.tooltip {
+    position: absolute;
+    box-sizing: border-box;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: 20rem;
+    background: white;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    font-family: NotoNashkArabic, ProximaNova, "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
+    font-size: .85rem;
+
+    ol {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    time {
+      font-weight: bold;
+      padding-right: .5rem;
+    }
+
+    display: none;
+    &.visible { display: block; }
   }
 }

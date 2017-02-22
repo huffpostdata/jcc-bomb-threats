@@ -208,7 +208,13 @@ function rewriteCities(svg, cities) {
       return {
         x: Math.round(cluster.xSum / cluster.threats.length),
         y: Math.round(cluster.ySum / cluster.threats.length),
-        threats: cluster.threats
+        threats: cluster.threats.sort((a, b) => {
+          return (
+            a.date.localeCompare(b.date) // ASCII = chronological
+            || 
+            a.city.localeCompare(b.city)
+          )
+        })
       }
     })
   }

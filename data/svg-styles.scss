@@ -13,7 +13,8 @@
 .cities {
   circle {
     fill: #e34433;
-    stroke: white
+    stroke: white;
+    cursor: pointer;
   }
   text {
     font-family: NotoNashkArabic, ProximaNova, "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
@@ -22,5 +23,6 @@
     stroke: none;
     text-anchor: middle;
     alignment-baseline: central;
+    pointer-events: none;
   }
 }
