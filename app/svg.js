@@ -139,7 +139,11 @@ function formatCities(svg, cities) {
     const y = parseFloat(yRegex.exec(attributes)[1])
     const city = idToCity[idMatch[1]]
     if (!city) throw new Error(`Could not match city ${idMatch[1]}`)
-    return `<g><circle cx="${x}" cy="${y}" r="20"/><text x="${x}" y="${y}">${city.threats.length}</text><desc>${JSON.stringify(city.threats)}</desc></g>`
+
+    const circle = `<circle cx="${x}" cy="${y}" r="20"/>`
+    const text = city.threats.length === 1 ? '' : `<text x="${x}" y="${y}">${city.threats.length}</text>`
+    const desc = `<desc>${JSON.stringify(city)}</desc>`
+    return `<g>${circle}${text}${desc}`
   })
 }
 
