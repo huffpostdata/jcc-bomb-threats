@@ -26,6 +26,7 @@
     "xmldoc": "^1.0.0"
   },
   "devDependencies": {
-    "chokidar": "^1.6.1"
+    "chokidar": "^1.6.1",
+    "js-yaml": "^3.8.1"
   }
 }
