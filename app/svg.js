@@ -18,12 +18,12 @@ function loadCss(filePath) {
   }).css.toString('utf-8')
 }
 
-// Returns [ { id: ..., city: ..., stateAbbreviation: ..., threats: [ { date: '2017-01-20', place: '...' }, ... ] ]
-function loadThreatenedCities() {
+// Returns [ { name: ..., cityId: ..., city: ..., stateAbbreviation: ..., threatDates: [ '2017-01-20', ... ] }, ... ]
+function loadThreatenedPlaces() {
   const tsv = fs.readFileSync(`${__dirname}/google-sheets/threats.tsv`)
   const rows = csv_parse(tsv, { delimiter: '\t', columns: true })
 
-  function rowToId(row) {
+  function rowToCityId(row) {
     if (row.CITY === 'Newton Centre' && row.STATE === 'MA') {
       return 'Newton MA'
     } else {
@@ -31,49 +31,42 @@ function loadThreatenedCities() {
     }
   }
 
-  const citiesSet = {}
-  for (const row of rows) {
-    const id = rowToId(row)
-    if (!citiesSet.hasOwnProperty(id)) citiesSet[id] = []
-    citiesSet[id].push(row)
-  }
-
-  const cities = []
-
-  for (const id of Object.keys(citiesSet)) {
-    const cityRows = citiesSet[id]
-
-    const threats = []
-    for (const header of Object.keys(cityRows[0]).sort()) {
-      if (/^\d\d\d\d-\d\d-\d\d$/.test(header)) {
-        for (const row of cityRows) {
-          if (row[header].length > 0) {
-            threats.push({
-              date: header,
-              city: row.CITY,
-              stateAbbreviation: row.STATE, // TODO convert to abbreviation
-              place: row['JCC NAME']
-            })
-          }
-        }
+  return rows.map(row => {
+    const threatDates = []
+    for (const header of Object.keys(rows[0]).sort()) {
+      if (/^\d\d\d\d-\d\d-\d\d$/.test(header) && row[header].trim().length) {
+        threatDates.push(header)
       }
     }
+    if (threatDates.length === 0) throw new Error(`Found no threats for ${row['JCC NAME']}`)
 
-    const city = {
-      id: id,
-      threats: threats
+    return {
+      name: row['JCC NAME'],
+      city: row.CITY,
+      cityId: rowToCityId(row),
+      stateAbbreviation: row.STATE, // TODO convert to abbreviation
+      threatDates: threatDates
     }
-    cities.push(city)
-  }
-
-  return cities
+  })
 }
 
 function loadCityGeos() {
   const usGeos = JSON.parse(fs.readFileSync(`${__dirname}/../data/cities.geojson`)).features
 }
 
-function loadCities() {
+// Returns GeoJSON for all cities we care about.
+//
+// This GeoJSON will be projected using mapshaper's dynamically-generated
+// projection. Then we'll parse mapshaper's output and use the city coordinates.
+function loadCitiesGeojson() {
+  // 1. Find all the city IDs we want
+  // 2. Load our existing GeoJSON and filter for only the IDs we want
+  // 3. Write the result
+  const wantedIds = {}
+  for (const place of loadThreatenedPlaces()) {
+    wantedIds[place.cityId] = null
+  }
+
   const usGeos = JSON.parse(fs.readFileSync(`${__dirname}/../data/cities.geojson`)).features
   const caGeos = [
     {
@@ -82,31 +75,9 @@ function loadCities() {
       "geometry": { "type": "Point", "coordinates": [ -81.2453, 42.9849 ] }
     }
   ]
-
   const cityGeos = usGeos.concat(caGeos)
 
-  const idToGeo = {}
-  for (const cityGeo of cityGeos) {
-    idToGeo[cityGeo.properties.id] = cityGeo
-  }
-
-  const features = []
-  for (const threatenedCity of loadThreatenedCities()) {
-    const geo = idToGeo[threatenedCity.id]
-    if (!geo) {
-      throw new Error(`Could not find city: '${threatenedCity.id}'`)
-    } else {
-      features.push(Object.assign({}, geo, {
-        properties: Object.assign({}, geo.properties, threatenedCity)
-      }))
-    }
-  }
-
-  // Sort by latitude, so when circles overlap the bottom one is always atop
-  // the top one
-  features.sort((a, b) => {
-    return b.geometry.coordinates[1] - a.geometry.coordinates[1]
-  })
+  const features = cityGeos.filter(geo => wantedIds.hasOwnProperty(geo.properties.id))
 
   return {
     type: 'FeatureCollection',
@@ -115,7 +86,7 @@ function loadCities() {
 }
 
 function writeCitiesGeojson() {
-  const cities = loadCities()
+  const places = loadCitiesGeojson()
 
   try {
     fs.mkdirSync(`${__dirname}/../tmp`)
@@ -123,7 +94,7 @@ function writeCitiesGeojson() {
     if (e.code !== 'EEXIST') throw e
   }
 
-  fs.writeFileSync(`${__dirname}/../tmp/threatened-cities.geojson`, JSON.stringify(cities))
+  fs.writeFileSync(`${__dirname}/../tmp/threatened-cities.geojson`, JSON.stringify(places))
 }
 
 function runMapshaper() {
@@ -145,42 +116,44 @@ function runMapshaper() {
   )
 }
 
-function rewriteCities(svg, cities) {
-  const idToCity = {}
-  for (const city of loadThreatenedCities()) {
-    idToCity[city.id] = city
-  }
-
-  function circleToThreats(circle) {
-    const id = circle.attr.id
-    const x = parseFloat(circle.attr.cx)
-    const y = parseFloat(circle.attr.cy)
-
-    const city = idToCity[id]
-    if (!city) throw new Error(`Could not match city ${id}`)
-
-    return city.threats.map(threat => Object.assign({ x: x, y: y }, threat))
+function replaceSvgCitiesWithPlaces(svg, places) {
+  function circleToCity(circle) {
+    return {
+      id: circle.attr.id,
+      x: parseFloat(circle.attr.cx),
+      y: parseFloat(circle.attr.cy)
+    }
   }
 
   function clusterPlaces(places) {
     // Simple algo:
     // 1. Sort points by how many points are near them.
-    // 2. Go down the list, clustering at each point if applicable.
+    // 2. Go down the list, building a cluster around each non-clustered point
     //
-    // Step 1 should help us avoid the (unlikely?) case in which we pick a point
-    // a bit far from a cluster, and that divides up the cluster. It's a step
-    // Supercluster and Leaflet Clusterer don't take, because they're optimized
-    // for speed.
+    // Step 1 should help us avoid the (unlikely?) case like this:
+    //
+    //                       bcde
+    //                 a     fghi     n
+    //                       jklm
+    //
+    // ... we might create a cluster at `a` that pulls in all but `e`, `m` and
+    // `n`; then those would also be clustered, and the two clusters would end
+    // up positioned nearly atop one another (since they're positioned in their
+    // centers of gravity). Step 1 forces us to cluster at `g` or `h`, which
+    // means `a` and `n` will be looped in; that's what we want in this case.
+    //
+    // It's still a dinky algorithm. This is a slower and a teensy bit more
+    // ideal than the naive algorithm Leaflet and Mapbox use.
 
     // 0. Keep scratchpad; don't write anything into the passed `threats`
-    const points = places.map(place => { return { x: place.x, y: place.y, place: place } })
+    const points = places.map(place => { return { place: place } })
 
     // 0. Create index, with its fantastic within() method.
-    const index = kdbush(points, p => p.x, p => p.y, 10, Int32Array)
+    const index = kdbush(points, p => p.place.x, p => p.place.y, 10, Int32Array)
 
     // 1. Sort threats from nearest-a-cluster to farthest-from-a-cluster
     for (const point of points) {
-      point.nNear = index.within(point.x, point.y, ClusterRadius).length
+      point.nNear = index.within(point.place.x, point.place.y, ClusterRadius).length
     }
     const sortedPoints = points.slice().sort((a, b) => b.nNear - a.nNear)
 
@@ -190,14 +163,14 @@ function rewriteCities(svg, cities) {
       if (point.visited) continue
       point.visited = true
 
-      const cluster = { xSum: point.x, ySum: point.y, places: [ point.place ] }
+      const cluster = { xSum: point.place.x, ySum: point.place.y, places: [ point.place ] }
 
-      for (const closePointIndex of index.within(point.x, point.y, ClusterRadius)) {
+      for (const closePointIndex of index.within(point.place.x, point.place.y, ClusterRadius)) {
         const closePoint = points[closePointIndex]
         if (closePoint.visited) continue
         closePoint.visited = true
-        cluster.xSum += closePoint.x
-        cluster.ySum += closePoint.y
+        cluster.xSum += closePoint.place.x
+        cluster.ySum += closePoint.place.y
         cluster.places.push(closePoint.place)
       }
 
@@ -217,8 +190,7 @@ function rewriteCities(svg, cities) {
       return {
         x: Math.round(cluster.xSum / cluster.places.length),
         y: Math.round(cluster.ySum / cluster.places.length),
-        nPlaces: cluster.places.length,
-        threats: threats
+        places: cluster.places
       }
     })
   }
@@ -243,19 +215,28 @@ function rewriteCities(svg, cities) {
       )
     ]
 
-    if (cluster.nPlaces !== 1) {
+    if (cluster.places.length !== 1) {
       children.push(new XmlElement(
         'text',
         {
           x: String(cluster.x),
           y: String(cluster.y)
         },
-        [ String(cluster.nPlaces) ]
+        [ String(cluster.places.length) ]
       ))
     }
 
+    const lightweightPlaces = cluster.places.map(place => {
+      return {
+        city: place.city,
+        stateAbbreviation: place.stateAbbreviation,
+        name: place.name,
+        threatDates: place.threatDates
+      }
+    })
+
     children.push(new XmlElement(
-      'desc', {}, [ JSON.stringify(cluster.threats) ]
+      'desc', {}, [ JSON.stringify(cluster.places) ]
     ))
 
     return new XmlElement('g', {}, children)
@@ -263,27 +244,26 @@ function rewriteCities(svg, cities) {
 
   const xml = new xmldoc.XmlDocument(svg)
   const cityG = xml.childWithAttribute('id', 'cities')
-  const threats = [].concat(...cityG.children.map(circleToThreats))
-  const places = []
-  const placeThreats = {}
-  for (const threat of threats) {
-    if (!placeThreats[threat.place]) {
-      placeThreats[threat.place] = []
-      places.push({
-        name: threat.place,
-        x: threat.x,
-        y: threat.y,
-        city: threat.city,
-        stateAbbreviation: threat.stateAbbreviation,
-        threats: placeThreats[ threat.place ]
-      })
-    }
-    placeThreats[threat.place].push(threat)
-  }
-  const clusters = clusterPlaces(places)
+  const idToCity = indexArrayBy(cityG.children.map(circleToCity), 'id')
+  const placesWithXY = places
+    .map(place => {
+      city = idToCity[place.cityId]
+      if (!city) throw new Error(`We expected the city '${place.cityId}' to be in the SVG but it was not`)
+      return Object.assign({ x: city.x, y: city.y }, place)
+    })
+  const clusters = clusterPlaces(placesWithXY)
 
+  cityG.attr.id = 'places'
   cityG.children = clusters.map(clusterToG)
   return xml.toString({ compressed: true })
+}
+
+function indexArrayBy(array, key) {
+  const ret = {}
+  for (const item of array) {
+    ret[item[key]] = item
+  }
+  return ret
 }
 
 function compressSvg(svg) {
@@ -298,7 +278,7 @@ function loadSvg() {
 
   const compressed = compressSvg(svg)
 
-  const withCities = rewriteCities(compressed, loadCities())
+  const withCities = replaceSvgCitiesWithPlaces(compressed, loadThreatenedPlaces())
 
   const css = loadCss(`${__dirname}/../data/svg-styles.scss`)
   const withStyle = withCities.replace('baseProfile="tiny"', 'baseProfile="basic"')
@@ -334,16 +314,10 @@ function wrapSvgWithHtml(svg) {
     .filter(s => /^\d\d\d\d-\d\d-\d\d$/.test(s)) // dates
     .sort().reverse()[0]
 
-  const placesWithRepeats = tsv
+  const nPlaces = tsv
     .split(/\r?\n/).slice(1) // body rows
     .filter(s => s.length)   // nix empty lines
-    .map(s => s.split(',', 2)[0])
-
-  const uniquePlaces = {}
-  for (const place of placesWithRepeats) {
-    uniquePlaces[place] = null
-  }
-  const nPlaces = Object.keys(uniquePlaces).length
+    .length
 
   const css = loadCss(`${__dirname}/../data/html-styles.scss`)
   const sentence = `As of ${formatDateS(lastDate)}, there have been bomb threats in ${nPlaces} of the ${NPlacesTotal} JCCs in North America.`

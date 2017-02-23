@@ -8,29 +8,27 @@
   var tooltipCircle = null; // currently-visible tooltip
   var highlightCircle = null;
 
-  function threatToHtml(threat) {
+  function placeToHtml(place) {
+    var times = place.threatDates
+      .map(function(date) {
+        return '<time datetime="' + date + '">' + formatDateS(date) + '</time>';
+      })
+      .join(', ');
+
     return [
       '<li>',
-        '<time datetime="', threat.date, '">', formatDateS(threat.date), '</time>',
-        '<span class="city">', threat.city, '</span>',
-        '<span class="place">', threat.place, '</span>',
+        '<span class="city">', place.city, '</span>', ', ',
+        times,
+        '<span class="place">', place.name, '</span>',
       '</li>'
     ].join('');
   }
 
   function descToHtml(desc) {
-    var threats = JSON.parse(desc);
-    var places = {};
-    threats.forEach(function(threat) { places[threat.place] = null; })
-    var nPlaces = Object.keys(places).length;
-
-    var sentence = nPlaces === 1 ? '' : ('<h5>' + nPlaces + ' JCCs threatened</h5>');
-
     return [
       '<div class="tooltip-inner">',
-        sentence,
         '<ol>',
-          threats.map(threatToHtml).join(''),
+          JSON.parse(desc).map(placeToHtml).join(''),
         '</ol>',
       '</div>'
     ].join('');
