@@ -19,10 +19,18 @@
   }
 
   function descToHtml(desc) {
+    var threats = JSON.parse(desc);
+    var places = {};
+    threats.forEach(function(threat) { places[threat.place] = null; })
+    var nPlaces = Object.keys(places).length;
+
+    var sentence = nPlaces === 1 ? '' : ('<h5>' + nPlaces + ' JCCs threatened</h5>');
+
     return [
       '<div class="tooltip-inner">',
+        sentence,
         '<ol>',
-          JSON.parse(desc).map(threatToHtml).join(''),
+          threats.map(threatToHtml).join(''),
         '</ol>',
       '</div>'
     ].join('');
@@ -43,7 +51,6 @@
   }
 
   var Months = [ 'Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.' ];
-
   function formatDateS(dateS) {
     var year = parseFloat(dateS.slice(0, 4));
     var month = parseFloat(dateS.slice(5, 7));

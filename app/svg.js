@@ -8,7 +8,8 @@ const xmldoc = require('xmldoc')
 const svgoConvertPathData = require('./svgo/convertPathData').fn
 
 const ClusterRadius = 110
-const CityRadius = 55
+const PointRadius = 55
+const NPlacesTotal = 350
 
 function loadCss(filePath) {
   return sass.renderSync({
@@ -134,7 +135,7 @@ function runMapshaper() {
       '-rename-layers', 'states,mesh,cities',
       '-proj', 'albersusa',
       '-simplify', 'planar', 'resolution=1990x1990', 'stats',
-      '-svg-style', 'r=20',
+      '-svg-style', 'r=' + PointRadius,
       '-o', '-', 'format=svg', 'precision=1', 'width=2000', 'margin=5', 'id-field=id'
     ],
     {
@@ -161,7 +162,7 @@ function rewriteCities(svg, cities) {
     return city.threats.map(threat => Object.assign({ x: x, y: y }, threat))
   }
 
-  function clusterThreats(threats, r) {
+  function clusterPlaces(places) {
     // Simple algo:
     // 1. Sort points by how many points are near them.
     // 2. Go down the list, clustering at each point if applicable.
@@ -172,32 +173,32 @@ function rewriteCities(svg, cities) {
     // for speed.
 
     // 0. Keep scratchpad; don't write anything into the passed `threats`
-    const points = threats.map(threat => { return { x: threat.x, y: threat.y, threat: threat } })
+    const points = places.map(place => { return { x: place.x, y: place.y, place: place } })
 
     // 0. Create index, with its fantastic within() method.
     const index = kdbush(points, p => p.x, p => p.y, 10, Int32Array)
 
     // 1. Sort threats from nearest-a-cluster to farthest-from-a-cluster
     for (const point of points) {
-      point.nNear = index.within(point.x, point.y, r).length
+      point.nNear = index.within(point.x, point.y, ClusterRadius).length
     }
     const sortedPoints = points.slice().sort((a, b) => b.nNear - a.nNear)
 
     // 2. Iterate: build a cluster at each threat that hasn't been seen yet
-    const clusters = [] // Array of { xSum, ySum, threats }
+    const clusters = [] // Array of { xSum, ySum, places }
     for (const point of sortedPoints) {
       if (point.visited) continue
       point.visited = true
 
-      const cluster = { xSum: point.x, ySum: point.y, threats: [ point.threat ] }
+      const cluster = { xSum: point.x, ySum: point.y, places: [ point.place ] }
 
-      for (const closePointIndex of index.within(point.x, point.y, r)) {
+      for (const closePointIndex of index.within(point.x, point.y, ClusterRadius)) {
         const closePoint = points[closePointIndex]
         if (closePoint.visited) continue
         closePoint.visited = true
         cluster.xSum += closePoint.x
         cluster.ySum += closePoint.y
-        cluster.threats.push(closePoint.threat)
+        cluster.places.push(closePoint.place)
       }
 
       clusters.push(cluster)
@@ -205,16 +206,19 @@ function rewriteCities(svg, cities) {
 
     // 3. Calculate the weighted x/y for each cluster
     return clusters.map(cluster => {
+      const threats = [].concat(...cluster.places.map(p => p.threats)).sort((a, b) => {
+        return (
+          a.date.localeCompare(b.date) // ASCII = chronological
+          ||
+          a.city.localeCompare(b.city)
+        )
+      })
+
       return {
-        x: Math.round(cluster.xSum / cluster.threats.length),
-        y: Math.round(cluster.ySum / cluster.threats.length),
-        threats: cluster.threats.sort((a, b) => {
-          return (
-            a.date.localeCompare(b.date) // ASCII = chronological
-            || 
-            a.city.localeCompare(b.city)
-          )
-        })
+        x: Math.round(cluster.xSum / cluster.places.length),
+        y: Math.round(cluster.ySum / cluster.places.length),
+        nPlaces: cluster.places.length,
+        threats: threats
       }
     })
   }
@@ -234,19 +238,19 @@ function rewriteCities(svg, cities) {
         {
           cx: String(cluster.x),
           cy: String(cluster.y),
-          r: String(CityRadius)
+          r: String(PointRadius)
         }
       )
     ]
 
-    if (cluster.threats.length !== 1) {
+    if (cluster.nPlaces !== 1) {
       children.push(new XmlElement(
         'text',
         {
           x: String(cluster.x),
           y: String(cluster.y)
         },
-        [ String(cluster.threats.length) ]
+        [ String(cluster.nPlaces) ]
       ))
     }
 
@@ -259,8 +263,24 @@ function rewriteCities(svg, cities) {
 
   const xml = new xmldoc.XmlDocument(svg)
   const cityG = xml.childWithAttribute('id', 'cities')
-  const threatArrays = [].concat(...cityG.children.map(circleToThreats))
-  const clusters = clusterThreats(threatArrays, ClusterRadius)
+  const threats = [].concat(...cityG.children.map(circleToThreats))
+  const places = []
+  const placeThreats = {}
+  for (const threat of threats) {
+    if (!placeThreats[threat.place]) {
+      placeThreats[threat.place] = []
+      places.push({
+        name: threat.place,
+        x: threat.x,
+        y: threat.y,
+        city: threat.city,
+        stateAbbreviation: threat.stateAbbreviation,
+        threats: placeThreats[ threat.place ]
+      })
+    }
+    placeThreats[threat.place].push(threat)
+  }
+  const clusters = clusterPlaces(places)
 
   cityG.children = clusters.map(clusterToG)
   return xml.toString({ compressed: true })
@@ -298,9 +318,36 @@ function svgToAspectRatio(svg) {
   const height = +viewBoxM[2]
 }
 
+var Months = [ 'Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.' ];
+function formatDateS(dateS) {
+  var year = parseFloat(dateS.slice(0, 4));
+  var month = parseFloat(dateS.slice(5, 7));
+  var day = parseFloat(dateS.slice(8, 10));
+  return Months[month - 1] + ' ' + day;
+}
+
 function wrapSvgWithHtml(svg) {
+  const tsv = fs.readFileSync(`${__dirname}/google-sheets/threats.tsv`, 'utf-8')
+  const lastDate = tsv
+    .split(/\r?\n/, 2)[0] // header row as String
+    .split(/\t/)          // headers
+    .filter(s => /^\d\d\d\d-\d\d-\d\d$/.test(s)) // dates
+    .sort().reverse()[0]
+
+  const placesWithRepeats = tsv
+    .split(/\r?\n/).slice(1) // body rows
+    .filter(s => s.length)   // nix empty lines
+    .map(s => s.split(',', 2)[0])
+
+  const uniquePlaces = {}
+  for (const place of placesWithRepeats) {
+    uniquePlaces[place] = null
+  }
+  const nPlaces = Object.keys(uniquePlaces).length
+
   const css = loadCss(`${__dirname}/../data/html-styles.scss`)
-  return `<style>${css}</style><div class="svg-container">${svg}</div>`
+  const sentence = `As of ${formatDateS(lastDate)}, there have been bomb threats in ${nPlaces} of the ${NPlacesTotal} JCCs in North America.`
+  return `<style>${css}</style><h2>Jewish Community Centers Threatened In 2017</h2><p>${sentence}</p><div class="svg-container">${svg}</div>`
 }
 
 const svg = loadSvg()
