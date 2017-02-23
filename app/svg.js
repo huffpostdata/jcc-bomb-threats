@@ -7,8 +7,8 @@ const kdbush = require('kdbush')
 const xmldoc = require('xmldoc')
 const svgoConvertPathData = require('./svgo/convertPathData').fn
 
-const ClusterRadius = 70
-const CityRadius = 30
+const ClusterRadius = 110
+const CityRadius = 55
 
 function loadCss(filePath) {
   return sass.renderSync({

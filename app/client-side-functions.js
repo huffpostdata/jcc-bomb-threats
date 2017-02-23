@@ -6,15 +6,14 @@
   var svgNode = div.querySelector('svg');
   var tooltip = div.querySelector('.tooltip');
   var tooltipCircle = null; // currently-visible tooltip
+  var highlightCircle = null;
 
   function threatToHtml(threat) {
     return [
       '<li>',
         '<time datetime="', threat.date, '">', formatDateS(threat.date), '</time>',
-        'Caller threatened ',
-        '<span class="place">', threat.place, '</span>',
-        ' in ',
         '<span class="city">', threat.city, '</span>',
+        '<span class="place">', threat.place, '</span>',
       '</li>'
     ].join('');
   }
@@ -30,8 +29,17 @@
   }
 
   function positionTooltipAboveCircle(circle) {
-    tooltip.style.top = '0px';
-    tooltip.style.left = '0px';
+    var divBBox = div.getBoundingClientRect();
+    var circleBBox = circle.getBoundingClientRect();
+    var w = tooltip.clientWidth;
+    var h = tooltip.clientHeight;
+
+    var left = circleBBox.left - divBBox.left + circleBBox.width / 2 - w / 2;
+    if (left + w > divBBox.width) left = divBBox.width - w;
+    if (left < 0) left = 0;
+
+    tooltip.style.top = (circleBBox.top - divBBox.top - h - 16) + 'px';
+    tooltip.style.left = left + 'px';
   }
 
   var Months = [ 'Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.' ];
@@ -46,27 +54,36 @@
   function showTooltipForCircle(circle) {
     if (circle === tooltipCircle) return;
     tooltipCircle = circle;
+
+    if (highlightCircle !== null) {
+      highlightCircle.parentNode.removeChild(highlightCircle);
+      highlightCircle = null;
+    }
+
     if (circle === null) {
       tooltip.innerHTML = '';
       tooltip.classList.remove('visible');
       return;
     }
 
-    positionTooltipAboveCircle(circle);
     var desc = circle.parentNode.querySelector('desc');
     if (!desc) {
       console.warn("Missing `desc` near `circle`", circle);
       return;
     }
 
+    highlightCircle = circle.cloneNode();
+    highlightCircle.setAttribute('class', 'highlight');
+    svgNode.appendChild(highlightCircle);
+
     tooltip.innerHTML = descToHtml(desc.innerHTML);
-    tooltip.classList.add('visible');
+    tooltip.classList.add('visible'); // before positioning, so width calculation works
+    positionTooltipAboveCircle(circle);
   }
 
   function eventToCircle(ev) {
     var node = ev.target;
     while (node && node.tagName !== 'svg') {
-      console.log(node.tagName);
       if (node.tagName === 'circle') return node;
       node = node.parentNode;
     }
