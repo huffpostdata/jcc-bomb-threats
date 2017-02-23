@@ -15,6 +15,7 @@
   "dependencies": {
     "csv-parse": "^1.2.0",
     "google-drive-console-download": "^1.2.0",
+    "hpd-asset-pipeline": "0.0.5",
     "in-memory-website": "0.0.2",
     "kdbush": "^1.0.1",
     "mapshaper": "^0.4.12",
@@ -24,7 +25,6 @@
     "xmldoc": "^1.0.0"
   },
   "devDependencies": {
-    "chokidar": "^1.6.1",
-    "hpd-asset-pipeline": "0.0.5"
+    "chokidar": "^1.6.1"
   }
 }
