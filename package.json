@@ -13,6 +13,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "aws-sdk": "^2.18.0",
     "csv-parse": "^1.2.0",
     "google-drive-console-download": "^1.2.0",
     "hpd-asset-pipeline": "0.0.5",
