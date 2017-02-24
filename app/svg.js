@@ -328,7 +328,7 @@ function wrapSvgWithHtml(svg) {
       '<div class="summary">',
         '<ul class="summary">',
           '<li class="n-total"><span class="count">166</span><span class="description">JCC Association locations in<br/>the United States and Canada</span></li>',
-          `<li class="n-threatened"><span class="count">${nPlaces}</span><span class="description">Received bomb threats</span></li>`,
+          `<li class="n-threatened"><span class="count">${nPlaces}</span><span class="description">Locations received bomb threats</span></li>`,
         '</ul>',
       '</div>',
       `<div class="svg-container">${svg}</div>`,
