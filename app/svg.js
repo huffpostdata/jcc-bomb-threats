@@ -305,6 +305,9 @@ function formatDateS(dateS) {
   var day = parseFloat(dateS.slice(8, 10));
   return Months[month - 1] + ' ' + day;
 }
+function formatDateWithYear(date) {
+  return Months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear();
+}
 
 function wrapSvgWithHtml(svg) {
   const tsv = fs.readFileSync(`${__dirname}/google-sheets/threats.tsv`, 'utf-8')
@@ -320,7 +323,6 @@ function wrapSvgWithHtml(svg) {
     .length
 
   const css = loadCss(`${__dirname}/../data/html-styles.scss`)
-  const sentence = `As of ${formatDateS(lastDate)}, there have been bomb threats in ${nPlaces} of the ${NPlacesTotal} JCCs in North America.`
   return [
     `<style>${css}</style>`,
     '<figure>',
@@ -332,6 +334,7 @@ function wrapSvgWithHtml(svg) {
         '</ul>',
       '</div>',
       `<div class="svg-container">${svg}</div>`,
+      `<div class="last-updated">Map updated ${formatDateWithYear(new Date())}</div>`,
     '</figure>',
   ].join('')
 }

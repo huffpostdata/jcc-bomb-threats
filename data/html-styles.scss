@@ -132,4 +132,11 @@
     display: none;
     &.visible { display: block; }
   }
+
+  .last-updated {
+    font-family: $body-font-family;
+    font-style: italic;
+    font-size: .85rem;
+    color: $line-color;
+  }
 }
