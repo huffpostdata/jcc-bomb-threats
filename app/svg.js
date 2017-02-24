@@ -8,7 +8,7 @@ const xmldoc = require('xmldoc')
 const svgoConvertPathData = require('./svgo/convertPathData').fn
 
 const ClusterRadius = 110
-const PointRadius = 55
+const PointRadius = 40
 const NPlacesTotal = 199
 
 function loadCss(filePath) {
