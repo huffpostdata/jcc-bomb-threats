@@ -4,6 +4,12 @@
   headers:
     Content-Type: application/javascript; charset=utf-8
 
+- path: /jcc-threats.js
+  model: jcc-threats
+  template: jcc-threats.js
+  headers:
+    Content-Type: application/javascript; charset=utf-8
+
 - path: /test/jcc-threats
   model: jcc-threats
   template: test/jcc-threats

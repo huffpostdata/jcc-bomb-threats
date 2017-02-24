@@ -8,11 +8,18 @@
     </style>
   </head>
   <body>
-    <p>The all-important embed code:</p>
-    <pre style="overflow: hidden;">
-      &lt;div id="hpd-jcc-threats"&gt;&lt;/div&gt;
-      &lt;script src="${data.url_to('/jcc-threats-' + data.model.date + '.js')}"&gt;&lt;/script&gt;
-    </pre>
+    <p>This embed code will embed the map you see below. The map won't incorporate future threats, so you can use the count in your Athena entry:</p>
+    <pre style="overflow: hidden;">&lt;div id="hpd-jcc-threats"&gt;&lt;/div&gt;
+&lt;script src="${data.url_to('/jcc-threats-' + data.model.date + '.js')}"&gt;&lt;/script&gt;</pre>
+
+    <hr>
+
+    <p>And <em>this</em> embed code will embed an auto-updating map. The map will change in the future, even if you don't edit your Athena entry:</p>
+    <pre style="overflow: hidden;">&lt;div id="hpd-jcc-threats"&gt;&lt;/div&gt;
+&lt;script src="${data.url_to('/jcc-threats.js')}"&gt;&lt;/script&gt;</pre>
+
+    <hr>
+
     <p>Here's what you'll see on the page:</p>
     <div style="max-width: 700px; margin: 0 auto;">
       <div id="hpd-jcc-threats"></div>
