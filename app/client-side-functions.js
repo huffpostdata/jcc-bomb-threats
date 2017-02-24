@@ -35,16 +35,20 @@
   }
 
   function positionTooltipAboveCircle(circle) {
+    // Set it such that it _can_ stretch to full width if need be
+    tooltip.style.bottom = '0px'
+    tooltip.style.left = '0px'
+
+    // Now set bottom and left
     var divBBox = div.getBoundingClientRect();
     var circleBBox = circle.getBoundingClientRect();
     var w = tooltip.clientWidth;
-    var h = tooltip.clientHeight;
 
     var left = circleBBox.left - divBBox.left + circleBBox.width / 2 - w / 2;
     if (left + w > divBBox.width) left = divBBox.width - w;
     if (left < 0) left = 0;
 
-    tooltip.style.top = (circleBBox.top - divBBox.top - h - 16) + 'px';
+    tooltip.style.bottom = (divBBox.bottom - circleBBox.top + 8) + 'px';
     tooltip.style.left = left + 'px';
   }
 
@@ -61,9 +65,10 @@
     tooltipCircle = circle;
 
     if (highlightCircle !== null) {
-      highlightCircle.parentNode.removeChild(highlightCircle);
-      highlightCircle = null;
+      highlightCircle.setAttribute('class', '');
     }
+
+    highlightCircle = circle;
 
     if (circle === null) {
       tooltip.innerHTML = '';
@@ -77,9 +82,7 @@
       return;
     }
 
-    highlightCircle = circle.cloneNode();
     highlightCircle.setAttribute('class', 'highlight');
-    svgNode.appendChild(highlightCircle);
 
     tooltip.innerHTML = descToHtml(desc.innerHTML);
     tooltip.classList.add('visible'); // before positioning, so width calculation works

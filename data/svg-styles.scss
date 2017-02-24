@@ -1,28 +1,37 @@
+@import 'shared-styles';
+
 .states {
   fill: white;
-  stroke: #6d6e71;
+  stroke: $line-color;
   stroke-width: 1px;
 }
 
 .mesh {
   fill: white;
-  stroke: #6d6e71;
+  stroke: $line-color;
   stroke-width: 1px;
 }
 
 .places {
   circle {
-    fill: #e34433;
+    fill: $threat-color;
     stroke: white;
+    stroke-width: 1px;
     cursor: pointer;
+
+    &.highlight {
+      stroke: black;
+      stroke-width: 3px;
+    }
   }
+
   text {
-    font-family: NotoNashkArabic, ProximaNova, "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
-    font-size: 50px;
+    font-family: $header-font-family;
+    font-size: 55px;
     fill: white;
     stroke: none;
     text-anchor: middle;
-    alignment-baseline: middle;
+    transform: translate(0, 20px);
     pointer-events: none;
   }
 }

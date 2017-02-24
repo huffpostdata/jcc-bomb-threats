@@ -9,12 +9,12 @@
   </head>
   <body>
     <p>The all-important embed code:</p>
-    <pre>
+    <pre style="overflow: hidden;">
       &lt;div id="hpd-jcc-threats"&gt;&lt;/div&gt;
       &lt;script src="${data.url_to('/jcc-threats-' + data.model.date + '.js')}"&gt;&lt;/script&gt;
     </pre>
     <p>Here's what you'll see on the page:</p>
-    <div style="width: 700px; margin: 0 auto;">
+    <div style="max-width: 700px; margin: 0 auto;">
       <div id="hpd-jcc-threats"></div>
       <script src="${data.url_to('/jcc-threats-' + data.model.date + '.js')}"></script>
     </div>

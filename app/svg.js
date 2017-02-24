@@ -321,7 +321,19 @@ function wrapSvgWithHtml(svg) {
 
   const css = loadCss(`${__dirname}/../data/html-styles.scss`)
   const sentence = `As of ${formatDateS(lastDate)}, there have been bomb threats in ${nPlaces} of the ${NPlacesTotal} JCCs in North America.`
-  return `<style>${css}</style><h2>Jewish Community Centers Threatened In 2017</h2><p>${sentence}</p><div class="svg-container">${svg}</div>`
+  return [
+    `<style>${css}</style>`,
+    '<figure>',
+      '<figcaption>Jewish Community Centers Threatened In 2017</figcaption>',
+      '<div class="summary">',
+        '<ul class="summary">',
+          '<li class="n-total"><span class="count">166</span><span class="description">JCC Association locations in<br/>the United States and Canada</span></li>',
+          `<li class="n-threatened"><span class="count">${nPlaces}</span><span class="description">Received bomb threats</span></li>`,
+        '</ul>',
+      '</div>',
+      `<div class="svg-container">${svg}</div>`,
+    '</figure>',
+  ].join('')
 }
 
 const svg = loadSvg()
