@@ -101,10 +101,9 @@
       tooltipCircle = circle;
 
       if (highlightCircle !== null) {
-        highlightCircle.setAttribute('class', '');
+        highlightCircle.parentNode.removeChild(highlightCircle);
+        highlightCircle = null;
       }
-
-      highlightCircle = circle;
 
       if (circle === null) {
         tooltip.innerHTML = '';
@@ -118,7 +117,9 @@
         return;
       }
 
+      highlightCircle = circle.cloneNode(false);
       highlightCircle.setAttribute('class', 'highlight');
+      svgNode.appendChild(highlightCircle);
 
       tooltip.innerHTML = descToHtml(desc.innerHTML);
       tooltip.classList.add('visible'); // before positioning, so width calculation works
@@ -134,12 +135,13 @@
       return null;
     }
 
-    svgNode.addEventListener('mousemove', function(ev) {
+    var placesG = svgNode.querySelector('g.places');
+    placesG.addEventListener('mousemove', function(ev) {
       var circle = eventToCircle(ev);
       showTooltipForCircle(circle);
     });
 
-    svgNode.addEventListener('mouseleave', function(ev) {
+    placesG.addEventListener('mouseleave', function(ev) {
       showTooltipForCircle(null);
     });
   }

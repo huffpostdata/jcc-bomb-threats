@@ -15,14 +15,15 @@
 .places {
   circle {
     fill: $threat-color;
-    stroke: white;
-    stroke-width: 1px;
     cursor: pointer;
 
-    &.highlight {
-      stroke: black;
-      stroke-width: 3px;
-    }
+    // Add a giant stroke. It increases the tappable radius on mobile.
+    // remember, half the stroke-width goes _inwards_. So the number in this
+    // stylesheet is double the effective increase in radius.
+    // double whatever
+    stroke: black;
+    stroke-opacity: 0;
+    stroke-width: 50px;
   }
 
   text {
@@ -35,4 +36,12 @@
     transform: translate(0, 20px);
     pointer-events: none;
   }
+}
+
+circle.highlight {
+  fill: none;
+  stroke: black;
+  stroke-opacity: 1;
+  stroke-width: 3px;
+  pointer-events: none;
 }
