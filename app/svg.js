@@ -71,7 +71,7 @@ function loadCitiesGeojson() {
   const caGeos = [
     {
       "type": "Feature",
-      "properties": { "id": "London Ontario" },
+      "properties": { "id": "London, Canada Ontario" },
       "geometry": { "type": "Point", "coordinates": [ -81.2453, 42.9849 ] }
     }
   ]
