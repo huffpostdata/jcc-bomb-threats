@@ -17,6 +17,7 @@ module.exports = {
   'jcc-threats': {
     date: lastDate,
     html: svg.html,
+    svg: svg.svg, // TODO nix me
     aspectRatio: svg.aspectRatio
   },
 }

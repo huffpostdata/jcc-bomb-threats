@@ -1,1 +1,16 @@
--- $!{data.helpers.file_contents('app/client-side-functions.js')}($!{JSON.stringify(data.model.html)},$!{JSON.stringify(data.url_to('/jcc-threats-:date.svg', data.model.date))},${data.model.aspectRatio})
+// Ideally, we'd give the URL to the SVG, and the JS would load it.
+//
+// However, that takes Access-Control-Allow-Origin: * on the SVG. That's taking
+// tech departments longer than we can handle. So we're embedding the SVG inline
+// instead.
+//
+// When the CORS headers are there (i.e., when you, dear Sir/Madam, read this),
+// uncomment the `data.url_to()` part and delete the `data.model.svg` part.
+// That will request the SVG contents through an XmlHTTPRequest, which will
+// make the page load more quickly. And delete all these comments, too.
+//
+// (This is the line you should uncomment):
+// -- $!{data.helpers.file_contents('app/client-side-functions.js')}($!{JSON.stringify(data.model.html)},$!{JSON.stringify(data.url_to('/jcc-threats-:date.svg', data.model.date))},${data.model.aspectRatio})
+
+// (And this is the line you should delete):
+-- $!{data.helpers.file_contents('app/client-side-functions.js')}($!{JSON.stringify(data.model.html)},$!{JSON.stringify(data.model.svg)},${data.model.aspectRatio})

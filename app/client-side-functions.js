@@ -10,19 +10,32 @@
   var svgContainer = div.querySelector('.svg-container');
   svgContainer.style.paddingBottom = (100 / aspectRatio) + '%';
 
-  document.addEventListener('DOMContentLoaded', function() {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', svgUrl, true);
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState !== XMLHttpRequest.DONE) return;
-      if (xhr.status !== 200) {
-        console.warn('XMLHttpRequest got non-200 status code: ' + xhr.status, xhr);
-        return;
+  function loadSvg(callback) {
+    if (/^https?\:/.test(svgUrl)) {
+      // svgUrl is a URL. Request its contents (requires CORS)
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', svgUrl, true);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState !== XMLHttpRequest.DONE) return;
+        if (xhr.status === 200) {
+          return callback(null, xhr.responseText);
+        } else {
+          return callback(new Error('XMLHttpRequest got non-200 status code: ' + xhr.status));
+        }
       }
+      xhr.send(null);
+    } else {
+      // HACK: svgUrl is the SVG itself, because we're using an icky workaround
+      // because our CORS headers won't arrive by deadline.
+      setTimeout(function() { return callback(null, svgUrl); }, 0);
+    }
+  }
 
-      load(xhr.responseText);
-    };
-    xhr.send(null);
+  document.addEventListener('DOMContentLoaded', function() {
+    loadSvg(function(err, svgString) {
+      if (err) throw err
+      load(svgString);
+    });
   });
 
   function load(svgString) {
