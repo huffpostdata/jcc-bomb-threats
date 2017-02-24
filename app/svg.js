@@ -9,7 +9,7 @@ const svgoConvertPathData = require('./svgo/convertPathData').fn
 
 const ClusterRadius = 110
 const PointRadius = 55
-const NPlacesTotal = 350
+const NPlacesTotal = 199
 
 function loadCss(filePath) {
   return sass.renderSync({
