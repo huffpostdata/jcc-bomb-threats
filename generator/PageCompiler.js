@@ -39,8 +39,6 @@ module.exports = class PageCompiler {
   }
 
   render(path, object, data) {
-    const template_key = object.template || object.path.slice(1) || 'index'
-
     let body
 
     if (Buffer.isBuffer(data.model)) {
@@ -49,6 +47,7 @@ module.exports = class PageCompiler {
       body = data.model[object.blob]
     } else {
       const context = new PageContext(this, data)
+      const template_key = object.template || object.path.slice(1) || 'index'
       body = this.render_template(template_key, context)
     }
 

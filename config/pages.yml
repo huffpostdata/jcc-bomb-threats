@@ -1,3 +1,9 @@
+- path: /jcc-threats-:date.svg
+  model: svg
+  blob: blob
+  headers:
+    Content-Type: image/svg+xml
+
 - path: /jcc-threats-:date.js
   model: jcc-threats
   template: jcc-threats.js

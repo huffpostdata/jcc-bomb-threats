@@ -6,6 +6,7 @@ const csv_parse = require('csv-parse/lib/sync')
 const kdbush = require('kdbush')
 const xmldoc = require('xmldoc')
 const svgoConvertPathData = require('./svgo/convertPathData').fn
+const escape_html = require('../generator/escape_html')
 
 const ClusterRadius = 110
 const PointRadius = 40
@@ -226,17 +227,17 @@ function replaceSvgCitiesWithPlaces(svg, places) {
       ))
     }
 
-    const lightweightPlaces = cluster.places.map(place => {
+    const svgPlaces = cluster.places.map(place => {
       return {
         city: place.city,
         stateAbbreviation: place.stateAbbreviation,
-        name: place.name,
+        name: escape_html(place.name),
         threatDates: place.threatDates
       }
     })
 
     children.push(new XmlElement(
-      'desc', {}, [ JSON.stringify(cluster.places) ]
+      'desc', {}, [ JSON.stringify(svgPlaces) ]
     ))
 
     return new XmlElement('g', {}, children)
@@ -296,6 +297,7 @@ function svgToAspectRatio(svg) {
   }
   const width = +viewBoxM[1]
   const height = +viewBoxM[2]
+  return width / height;
 }
 
 var Months = [ 'Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.' ];
@@ -309,7 +311,7 @@ function formatDateWithYear(date) {
   return Months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear();
 }
 
-function wrapSvgWithHtml(svg) {
+function getWrapperHtml() {
   const tsv = fs.readFileSync(`${__dirname}/google-sheets/threats.tsv`, 'utf-8')
   const lastDate = tsv
     .split(/\r?\n/, 2)[0] // header row as String
@@ -333,8 +335,8 @@ function wrapSvgWithHtml(svg) {
           `<li class="n-threatened"><span class="count">${nPlaces}</span><span class="description">Locations received bomb threats</span></li>`,
         '</ul>',
       '</div>',
-      `<div class="svg-container">${svg}</div>`,
-      `<div class="last-updated">Map updated ${formatDateWithYear(new Date())}</div>`,
+      `<div class="svg-container"></div>`,
+      `<div class="last-updated">Data current as of ${formatDateWithYear(new Date())}</div>`,
     '</figure>',
   ].join('')
 }
@@ -344,5 +346,5 @@ const svg = loadSvg()
 module.exports = {
   aspectRatio: svgToAspectRatio(svg),
   svg: svg,
-  html: wrapSvgWithHtml(svg)
+  html: getWrapperHtml()
 }
