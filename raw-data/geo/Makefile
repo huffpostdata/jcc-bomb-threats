@@ -24,6 +24,7 @@ tmp/citiesx010g.shp: citiesx010g_shp_nt00962.tar.gz
 
 ../../data/cities.geojson: tmp/citiesx010g.shp Makefile
 	$(MAPSHAPER) $< encoding=utf-8 \
+		-sort 'this.properties.POP_2010' \
 		-each 'id = NAME + " " + STATE' \
 		-filter-fields id \
 		-o $@ precision=0.0001
