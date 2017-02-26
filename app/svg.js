@@ -8,7 +8,7 @@ const xmldoc = require('xmldoc')
 const svgoConvertPathData = require('./svgo/convertPathData').fn
 const escape_html = require('../generator/escape_html')
 
-const ClusterRadius = 110
+const ClusterRadius = 80
 const PointRadius = 40
 const NPlacesTotal = 199
 
