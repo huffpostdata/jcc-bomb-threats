@@ -77,7 +77,6 @@
         '<div class="tooltip-inner">',
           listToHtml('Jewish school', 'Jewish schools', desc.schools),
           listToHtml('Jewish community center', 'Jewish community centers', desc.communityCenters),
-        '</div>'
       ].join('');
     }
 

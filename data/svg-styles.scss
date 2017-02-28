@@ -16,6 +16,7 @@
   circle {
     fill: $threat-color;
     cursor: pointer;
+    mix-blend-mode: darken;
 
     // Add a giant stroke. It increases the tappable radius on mobile.
     // remember, half the stroke-width goes _inwards_. So the number in this
@@ -28,7 +29,6 @@
 
   text {
     font-family: $header-font-family;
-    font-weight: bold;
     font-size: 55px;
     fill: white;
     stroke: none;
@@ -40,8 +40,8 @@
 
 circle.highlight {
   fill: none;
-  stroke: black;
+  stroke: #5b1b16;
   stroke-opacity: 1;
-  stroke-width: 3px;
+  stroke-width: 5px;
   pointer-events: none;
 }
