@@ -5,6 +5,14 @@
   // overwrite everything and nest everything inside #hpd-jcc-threats.
   position: relative; // so we can position tooltip
 
+  a {
+    color: inherit;
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
   figure {
     margin: 0;
     padding: 0;

@@ -1,6 +1,9 @@
 const fs = require('fs')
 
-const lastDate = fs.readFileSync(`${__dirname}/google-sheets/threats.tsv`, 'utf-8')
+const tsvBlob = fs.readFileSync(`${__dirname}/google-sheets/threats.tsv`)
+const tsv = tsvBlob.toString('utf-8')
+
+const lastDate = tsv
   .split(/\r?\n/, 2)[0] // header row as String
   .split(/\t/)          // headers
   .filter(s => /^\d\d\d\d-\d\d-\d\d$/.test(s)) // dates

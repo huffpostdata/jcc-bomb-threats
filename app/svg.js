@@ -317,7 +317,8 @@ function formatDateSWithYear(dateS) {
 }
 
 function getWrapperHtml() {
-  const tsv = fs.readFileSync(`${__dirname}/google-sheets/threats.tsv`, 'utf-8')
+  const tsvBlob = fs.readFileSync(`${__dirname}/google-sheets/threats.tsv`)
+  const tsv = tsvBlob.toString('utf-8')
   const lastDate = tsv
     .split(/\r?\n/, 2)[0] // header row as String
     .split(/\t/)          // headers
@@ -342,7 +343,7 @@ function getWrapperHtml() {
         '</ul>',
       '</div>',
       `<div class="svg-container"></div>`,
-      `<div class="last-updated">Data current as of ${formatDateSWithYear(lastDate)}</div>`,
+      `<div class="last-updated"><a download="bomb-threats.tsv" href="data:text/comma-separated-values;charset=utf-8;base64,${tsvBlob.toString('base64')}">Data</a> current as of ${formatDateSWithYear(lastDate)}</div>`,
       '<div class="credit">Map credit: Adam Hooper and Alissa Scheller</div>',
     '</figure>',
   ].join('')
