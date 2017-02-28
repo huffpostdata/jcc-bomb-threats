@@ -26,12 +26,13 @@
     font-family: $header-font-family;
     font-weight: bold;
     font-size: 1.2rem;
+    text-align: center;
     margin: 0;
     padding: 0;
   }
 
   div.summary {
-    margin: 1rem 0 0;
+    margin: 1rem 0;
     padding: 0;
     width: auto;
     display: -webkit-flex;
@@ -54,6 +55,10 @@
       margin: 0;
       padding: 0;
       line-height: 1.125rem;
+
+      @media (min-width: 700px) {
+      display: inline-block;
+      }
     }
 
     span.description {
@@ -69,12 +74,17 @@
       font-family: $header-font-family;
       font-weight: bold;
       font-size: 2.5rem;
+      text-decoration: none;
       line-height: 2.5rem;
       color: $line-color;
       width: 4.5rem;
       padding-right: .5rem;
       text-align: right;
       vertical-align: middle;
+
+      @media (min-width: 700px) {
+      text-decoration: underline;
+      }
     }
 
     li.n-threatened span.count {
@@ -112,11 +122,13 @@
     font-size: .85rem;
     line-height: 1.125rem;
     box-shadow: 0 0 5px rgba(0, 0, 0, .4);
+    
+    
 
     ol {
       list-style: none;
       margin: 0;
-      padding: 0;
+      padding: .5rem 0;
       display: inline;
       color: $line-color;
     }
@@ -145,7 +157,7 @@
       display: none;
       font-size: .8rem;
       font-style: italic;
-      color: #666;
+      color: $line-color;
     }
 
     display: none;
@@ -155,8 +167,8 @@
   .last-updated, .credit {
     font-family: $body-font-family;
     font-style: italic;
-    font-size: .85rem;
-    line-height: 1.25;
+    font-size: .75rem;
+    line-height: 1.5;
     color: $line-color;
   }
 }
