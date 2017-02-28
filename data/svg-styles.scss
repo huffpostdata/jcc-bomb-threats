@@ -1,13 +1,7 @@
 @import 'shared-styles';
 
-.states {
-  fill: white;
-  stroke: $line-color;
-  stroke-width: 1px;
-}
-
 .mesh {
-  fill: white;
+  fill: none;
   stroke: $line-color;
   stroke-width: 1px;
 }

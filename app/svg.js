@@ -107,7 +107,7 @@ function runMapshaper() {
   return child_process.execFileSync(`${__dirname}/../node_modules/.bin/mapshaper`,
     [
       '-i', `${__dirname}/../data/jcc-threat-map.topojson`, `${__dirname}/../tmp/threatened-cities.geojson`, 'combine-files',
-      '-rename-layers', 'states,mesh,cities',
+      '-rename-layers', 'mesh,cities',
       '-proj', 'albersusa',
       '-simplify', 'planar', 'resolution=1990x1990', 'stats',
       '-svg-style', 'r=' + PointRadius,
@@ -273,11 +273,28 @@ function indexArrayBy(array, key) {
   return ret
 }
 
+// Changes <g class="mesh"...><path/>... into <path class="mesh">
+function simplifySvgMesh(svg) {
+  return svg.replace(/<g.*?<\/g>/, g => {
+    const paths = []
+    const regex = /\bd="([^"]*)"/g
+    while (true) {
+      const m = regex.exec(g)
+      if (!m) return `<path class="mesh" d="${paths.join('')}"/>`
+
+      paths.push(m[1])
+    }
+  })
+}
+
 function compressSvg(svg) {
   // SVGO is the bomb, but it's too heavy. This pilfers the nice bit.
-  return svg
+  const optimized = svg
     .replace(/\s+</g, '<')
     .replace(/ d="([^"]+)"/g, (_, d) => ` d="${svgoConvertPathData(d, {})}"`)
+
+  const withSimpleMesh = simplifySvgMesh(optimized)
+  return withSimpleMesh
 }
 
 function loadSvg() {
