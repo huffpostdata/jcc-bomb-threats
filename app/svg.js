@@ -1,91 +1,18 @@
 const fs = require('fs')
 const sass = require('node-sass')
-const proj = require('./projection').projectFromWGS84
-const csv_parse = require('csv-parse/lib/sync')
 const escape_html = require('../generator/escape_html')
 const kdbush = require('kdbush')
-const StateAbbreviations = require('./StateAbbreviations.json')
+
+const PlacesWithXY = require('./PlacesWithXY')
 
 const ClusterRadius = 80
 const PointRadius = 40
-const NPlacesTotal = 199
 
 function loadCss(filePath) {
   return sass.renderSync({
     file: filePath,
     outputStyle: 'compressed'
   }).css.toString('utf-8')
-}
-
-// Returns [ { name: ..., cityId: ..., city: ..., stateAbbreviation: ..., threatDates: [ '2017-01-20', ... ] }, ... ]
-function loadThreatenedPlaces() {
-  const tsv = fs.readFileSync(`${__dirname}/google-sheets/threats.tsv`)
-  const rows = csv_parse(tsv, { delimiter: '\t', columns: true })
-
-  function rowToCityId(row) {
-    if (row.City === 'Newton Centre' && row.State === 'MA') {
-      return 'Newton MA'
-    } else {
-      return `${row.City} ${row.State}`
-    }
-  }
-
-  return rows.map(row => {
-    const threatDates = []
-    for (const header of Object.keys(rows[0]).sort()) {
-      if (/^\d\d\d\d-\d\d-\d\d$/.test(header) && row[header].trim().length) {
-        threatDates.push(header)
-      }
-    }
-    if (threatDates.length === 0) throw new Error(`Found no threats for ${row.Place}`)
-    if (!StateAbbreviations.hasOwnProperty(row.State)) throw new Error(`Spreadsheet mentions State ${row.State}, but there is no such state`)
-
-    return {
-      name: row.Place,
-      city: row.City,
-      cityId: rowToCityId(row),
-      purpose: row.Purpose, // "community center" or "school"
-      stateAbbreviation: StateAbbreviations[row.State],
-      threatDates: threatDates
-    }
-  })
-}
-
-// Returns GeoJSON for all cities we care about.
-//
-// This GeoJSON will be projected using mapshaper's dynamically-generated
-// projection. Then we'll parse mapshaper's output and use the city coordinates.
-function addXYToPlaces(places) {
-  // 1. Find all the city IDs we want
-  // 2. Load our existing GeoJSON and filter for only the IDs we want
-  // 3. Write the result
-  const wantedIds = {}
-  for (const place of places) {
-    wantedIds[place.cityId] = null
-  }
-
-  const usGeos = JSON.parse(fs.readFileSync(`${__dirname}/../data/cities.geojson`)).features
-  const caGeos = [
-    {
-      "type": "Feature",
-      "properties": { "id": "London Ontario" },
-      "geometry": { "type": "Point", "coordinates": [ -81.2453, 42.9849 ] }
-    }
-  ]
-  const cityGeos = usGeos.concat(caGeos)
-
-  const geos = cityGeos.filter(geo => wantedIds.hasOwnProperty(geo.properties.id))
-
-  const idToXY = {}
-  for (const geo of cityGeos) {
-    if (wantedIds.hasOwnProperty(geo.properties.id)) {
-      idToXY[geo.properties.id] = proj({ x: geo.geometry.coordinates[0], y: geo.geometry.coordinates[1] })
-    }
-  }
-
-  places.forEach(place => {
-    Object.assign(place, idToXY[place.cityId])
-  })
 }
 
 // Changes <g class="mesh"...><path/>... into <path class="mesh">
@@ -179,9 +106,7 @@ function buildCitiesG() {
     })
   }
 
-  const places = loadThreatenedPlaces()
-  addXYToPlaces(places)
-  const clusters = clusterPlaces(places)
+  const clusters = clusterPlaces(PlacesWithXY)
 
   function placeToSvgPlace(place) {
     return {
@@ -258,7 +183,7 @@ function getWrapperHtml() {
     .filter(s => /^\d\d\d\d-\d\d-\d\d$/.test(s)) // dates
     .sort().reverse()[0]
 
-  const places = loadThreatenedPlaces()
+  const places = PlacesWithXY
   const nThreats = places.reduce(((s, place) => s + place.threatDates.length), 0)
   const nSchools = places.filter(p => p.purpose === 'school').length
   const nCommunityCenters = places.filter(p => p.purpose === 'community center').length
