@@ -29,20 +29,8 @@ tmp/citiesx010g.shp: citiesx010g_shp_nt00962.tar.gz
 		-filter-fields id \
 		-o $@ precision=0.0001
 
-tmp/states-mesh.shp: tmp/states-land.shp
+../../data/jcc-threat-map.topojson: tmp/states-land.shp Makefile
 	$(MAPSHAPER) $< encoding=utf-8 \
-		-innerlines \
+		-lines \
+		-filter-fields '' \
 		-o $@
-
-tmp/usa-land.shp: tmp/states-land.shp
-	$(MAPSHAPER) $< encoding=utf-8 \
-		-dissolve \
-		-o $@
-
-../../data/jcc-threat-map.topojson: tmp/usa-land.shp tmp/states-mesh.shp
-	$(MAPSHAPER) $^ combine-files \
-		-rename-layers usa-land,states-mesh \
-		-o $@
-
-../../data/jcc-threat-map.svg: tmp/jcc-threat-map.svg
-	$(SVGO) --disable=cleanupIDs $< $@
