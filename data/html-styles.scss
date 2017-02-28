@@ -135,10 +135,11 @@
     &.visible { display: block; }
   }
 
-  .last-updated {
+  .last-updated, .credit {
     font-family: $body-font-family;
     font-style: italic;
     font-size: .85rem;
+    line-height: 1.25;
     color: $line-color;
   }
 }

@@ -336,6 +336,7 @@ function getWrapperHtml() {
       '</div>',
       `<div class="svg-container"></div>`,
       `<div class="last-updated">Data current as of ${formatDateSWithYear(lastDate)}</div>`,
+      '<div class="credit">Map credit: Adam Hooper and Alissa Scheller</div>',
     '</figure>',
   ].join('')
 }
