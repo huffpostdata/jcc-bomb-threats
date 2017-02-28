@@ -1,12 +1,9 @@
-const child_process = require('child_process')
 const fs = require('fs')
 const sass = require('node-sass')
-const svgo = require('svgo')
+const proj = require('./projection').projectFromWGS84
 const csv_parse = require('csv-parse/lib/sync')
 const escape_html = require('../generator/escape_html')
 const kdbush = require('kdbush')
-const xmldoc = require('xmldoc')
-const svgoConvertPathData = require('./svgo/convertPathData').fn
 const StateAbbreviations = require('./StateAbbreviations.json')
 
 const ClusterRadius = 80
@@ -54,20 +51,16 @@ function loadThreatenedPlaces() {
   })
 }
 
-function loadCityGeos() {
-  const usGeos = JSON.parse(fs.readFileSync(`${__dirname}/../data/cities.geojson`)).features
-}
-
 // Returns GeoJSON for all cities we care about.
 //
 // This GeoJSON will be projected using mapshaper's dynamically-generated
 // projection. Then we'll parse mapshaper's output and use the city coordinates.
-function loadCitiesGeojson() {
+function addXYToPlaces(places) {
   // 1. Find all the city IDs we want
   // 2. Load our existing GeoJSON and filter for only the IDs we want
   // 3. Write the result
   const wantedIds = {}
-  for (const place of loadThreatenedPlaces()) {
+  for (const place of places) {
     wantedIds[place.cityId] = null
   }
 
@@ -81,54 +74,40 @@ function loadCitiesGeojson() {
   ]
   const cityGeos = usGeos.concat(caGeos)
 
-  const features = cityGeos.filter(geo => wantedIds.hasOwnProperty(geo.properties.id))
+  const geos = cityGeos.filter(geo => wantedIds.hasOwnProperty(geo.properties.id))
 
-  return {
-    type: 'FeatureCollection',
-    features: features
-  }
-}
-
-function writeCitiesGeojson() {
-  const places = loadCitiesGeojson()
-
-  try {
-    fs.mkdirSync(`${__dirname}/../tmp`)
-  } catch (e) {
-    if (e.code !== 'EEXIST') throw e
-  }
-
-  fs.writeFileSync(`${__dirname}/../tmp/threatened-cities.geojson`, JSON.stringify(places))
-}
-
-function runMapshaper() {
-  writeCitiesGeojson()
-
-  return child_process.execFileSync(`${__dirname}/../node_modules/.bin/mapshaper`,
-    [
-      '-i', `${__dirname}/../data/jcc-threat-map.topojson`, `${__dirname}/../tmp/threatened-cities.geojson`, 'combine-files',
-      '-rename-layers', 'mesh,cities',
-      '-proj', 'albersusa',
-      '-simplify', 'planar', 'resolution=1990x1990', 'stats',
-      '-svg-style', 'r=' + PointRadius,
-      '-o', '-', 'format=svg', 'precision=1', 'width=2000', 'margin=5', 'id-field=id'
-    ],
-    {
-      maxBuffer: 8*1024*1024,
-      encoding: 'utf-8'
-    }
-  )
-}
-
-function replaceSvgCitiesWithPlaces(svg, places) {
-  function circleToCity(circle) {
-    return {
-      id: circle.attr.id,
-      x: parseFloat(circle.attr.cx),
-      y: parseFloat(circle.attr.cy)
+  const idToXY = {}
+  for (const geo of cityGeos) {
+    if (wantedIds.hasOwnProperty(geo.properties.id)) {
+      idToXY[geo.properties.id] = proj({ x: geo.geometry.coordinates[0], y: geo.geometry.coordinates[1] })
     }
   }
 
+  places.forEach(place => {
+    Object.assign(place, idToXY[place.cityId])
+  })
+}
+
+// Changes <g class="mesh"...><path/>... into <path class="mesh">
+function simplifySvgMesh(svg) {
+  return svg.replace(/<g.*?<\/g>/, g => {
+    const paths = []
+    const regex = /\bd="([^"]*)"/g
+    while (true) {
+      const m = regex.exec(g)
+      if (!m) return `<path class="mesh" d="${paths.join('')}"/>`
+
+      paths.push(m[1])
+    }
+  })
+}
+
+function compressSvg(svg) {
+  const withSimpleMesh = simplifySvgMesh(svg)
+  return withSimpleMesh
+}
+
+function buildCitiesG() {
   function clusterPlaces(places) {
     // Simple algo:
     // 1. Sort points by how many points are near them.
@@ -200,109 +179,46 @@ function replaceSvgCitiesWithPlaces(svg, places) {
     })
   }
 
+  const places = loadThreatenedPlaces()
+  addXYToPlaces(places)
+  const clusters = clusterPlaces(places)
+
+  function placeToSvgPlace(place) {
+    return {
+      city: place.city,
+      stateAbbreviation: place.stateAbbreviation,
+      name: place.name
+    }
+  }
+
   function clusterToG(cluster) {
-    // xmldoc wasn't designed to let us edit the tree. Whatevs -- this isn't complex.
-    function XmlElement(name, attr, children) {
-      this.name = name
-      this.attr = attr || {}
-      this.children = children || []
-    }
-    Object.assign(XmlElement.prototype, xmldoc.XmlDocument.prototype) // toStringWithIndent()
+    const text = cluster.places.length === 1 ? '' : [
+      `<text x="${cluster.x}" y="${cluster.y}">${cluster.places.length}</text>`
+    ].join('')
 
-    const children = [
-      new XmlElement(
-        'circle',
-        {
-          cx: String(cluster.x),
-          cy: String(cluster.y),
-          r: String(PointRadius)
-        }
-      )
-    ]
+    const descXml = escape_html(JSON.stringify({
+      schools: cluster.schools.map(placeToSvgPlace),
+      communityCenters: cluster.communityCenters.map(placeToSvgPlace)
+    }))
 
-    if (cluster.places.length !== 1) {
-      children.push(new XmlElement(
-        'text',
-        {
-          x: String(cluster.x),
-          y: String(cluster.y)
-        },
-        [ String(cluster.places.length) ]
-      ))
-    }
-
-    function placeToSvgPlace(place) {
-      return {
-        city: place.city,
-        stateAbbreviation: place.stateAbbreviation,
-        name: place.name,
-      }
-    }
-
-    children.push(new XmlElement(
-      'desc', {}, [ escape_html(JSON.stringify({
-        schools: cluster.schools.map(placeToSvgPlace),
-        communityCenters: cluster.communityCenters.map(placeToSvgPlace)
-      })) ]
-    ))
-
-    return new XmlElement('g', {}, children)
+    return [
+      `<g>`,
+        `<circle cx="${cluster.x}" cy="${cluster.y}" r="${PointRadius}"/>`,
+        text,
+        `<desc>${descXml}</desc>`,
+      `</g>`
+    ].join('')
   }
 
-  const xml = new xmldoc.XmlDocument(svg)
-  const cityG = xml.childWithAttribute('id', 'cities')
-  const idToCity = indexArrayBy(cityG.children.map(circleToCity), 'id')
-  const placesWithXY = places
-    .map(place => {
-      city = idToCity[place.cityId]
-      if (!city) throw new Error(`We expected the city '${place.cityId}' to be in the SVG but it was not`)
-      return Object.assign({ x: city.x, y: city.y }, place)
-    })
-  const clusters = clusterPlaces(placesWithXY)
-
-  cityG.attr.id = 'places'
-  cityG.children = clusters.map(clusterToG)
-  return xml.toString({ compressed: true })
-}
-
-function indexArrayBy(array, key) {
-  const ret = {}
-  for (const item of array) {
-    ret[item[key]] = item
-  }
-  return ret
-}
-
-// Changes <g class="mesh"...><path/>... into <path class="mesh">
-function simplifySvgMesh(svg) {
-  return svg.replace(/<g.*?<\/g>/, g => {
-    const paths = []
-    const regex = /\bd="([^"]*)"/g
-    while (true) {
-      const m = regex.exec(g)
-      if (!m) return `<path class="mesh" d="${paths.join('')}"/>`
-
-      paths.push(m[1])
-    }
-  })
-}
-
-function compressSvg(svg) {
-  // SVGO is the bomb, but it's too heavy. This pilfers the nice bit.
-  const optimized = svg
-    .replace(/\s+</g, '<')
-    .replace(/ d="([^"]+)"/g, (_, d) => ` d="${svgoConvertPathData(d, {})}"`)
-
-  const withSimpleMesh = simplifySvgMesh(optimized)
-  return withSimpleMesh
+  return `<g class="places">${clusters.map(clusterToG).join('')}</g>`
 }
 
 function loadSvg() {
-  const svg = runMapshaper()
+  const svg = fs.readFileSync(`${__dirname}/../data/jcc-threat-map.svg`, 'utf-8')
 
   const compressed = compressSvg(svg)
 
-  const withCities = replaceSvgCitiesWithPlaces(compressed, loadThreatenedPlaces())
+  const withCities = compressed.replace('</svg>', buildCitiesG() + '</svg>')
 
   const css = loadCss(`${__dirname}/../data/svg-styles.scss`)
   const withStyle = withCities.replace('baseProfile="tiny"', 'baseProfile="basic"')
