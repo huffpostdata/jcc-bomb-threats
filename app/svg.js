@@ -306,7 +306,7 @@ function loadSvg() {
 
   const css = loadCss(`${__dirname}/../data/svg-styles.scss`)
   const withStyle = withCities.replace('baseProfile="tiny"', 'baseProfile="basic"')
-    .replace('<g', `<defs><style>${css}</style></defs><g`)
+    .replace('<path', `<defs><style>${css}</style></defs><path`)
 
   const withClasses = withStyle.replace(/ id="/g, ' class="')
 
