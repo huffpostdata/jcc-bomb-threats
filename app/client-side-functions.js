@@ -10,6 +10,10 @@
   var svgContainer = div.querySelector('.svg-container');
   svgContainer.style.paddingBottom = (100 / aspectRatio) + '%';
 
+  function escape_html(s) {
+    return s; // HACK! Assume all is fine
+  }
+
   function loadSvg(callback) {
     if (/^https?\:/.test(svgUrl)) {
       // svgUrl is a URL. Request its contents (requires CORS)
@@ -45,27 +49,34 @@
     var svgNode = svgContainer.childNodes[0];
 
     function placeToHtml(place) {
-      var times = place.threatDates
-        .map(function(date) {
-          return '<time datetime="' + date + '">' + formatDateS(date) + '</time>';
-        })
-        .join(', ');
-
       return [
         '<li>',
-          '<span class="city">', place.city, '</span>', ', ',
-          times,
-          '<span class="place">', place.name, '</span>',
+          '<span class="city">', escape_html(place.city), '</span>', ', ',
+          '<span class="state">', escape_html(place.stateAbbreviation), '</span>',
         '</li>'
       ].join('');
     }
 
-    function descToHtml(desc) {
+    function listToHtml(labelSingular, labelPlural, places) {
+      if (places.length === 0) return '';
+      var label = places.length === 1 ? labelSingular : labelPlural;
+
+      return [
+        '<div class="list">',
+          '<strong>', escape_html(label), '</strong> in: ',
+          '<ol>',
+            places.map(placeToHtml).join(''),
+          '</ol>',
+        '</div>'
+      ].join('');
+    }
+
+    function descToHtml(descString) {
+      var desc = JSON.parse(descString);
       return [
         '<div class="tooltip-inner">',
-          '<ol>',
-            JSON.parse(desc).map(placeToHtml).join(''),
-          '</ol>',
+          listToHtml('Jewish school', 'Jewish schools', desc.schools),
+          listToHtml('Jewish community center', 'Jewish community centers', desc.communityCenters),
         '</div>'
       ].join('');
     }

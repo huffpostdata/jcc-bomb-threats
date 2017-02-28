@@ -3,10 +3,11 @@ const fs = require('fs')
 const sass = require('node-sass')
 const svgo = require('svgo')
 const csv_parse = require('csv-parse/lib/sync')
+const escape_html = require('../generator/escape_html')
 const kdbush = require('kdbush')
 const xmldoc = require('xmldoc')
 const svgoConvertPathData = require('./svgo/convertPathData').fn
-const escape_html = require('../generator/escape_html')
+const StateAbbreviations = require('./StateAbbreviations.json')
 
 const ClusterRadius = 80
 const PointRadius = 40
@@ -25,10 +26,10 @@ function loadThreatenedPlaces() {
   const rows = csv_parse(tsv, { delimiter: '\t', columns: true })
 
   function rowToCityId(row) {
-    if (row.CITY === 'Newton Centre' && row.STATE === 'MA') {
+    if (row.City === 'Newton Centre' && row.State === 'MA') {
       return 'Newton MA'
     } else {
-      return `${row.CITY} ${row.STATE}`
+      return `${row.City} ${row.State}`
     }
   }
 
@@ -39,13 +40,15 @@ function loadThreatenedPlaces() {
         threatDates.push(header)
       }
     }
-    if (threatDates.length === 0) throw new Error(`Found no threats for ${row['JCC NAME']}`)
+    if (threatDates.length === 0) throw new Error(`Found no threats for ${row.Place}`)
+    if (!StateAbbreviations.hasOwnProperty(row.State)) throw new Error(`Spreadsheet mentions State ${row.State}, but there is no such state`)
 
     return {
-      name: row['JCC NAME'],
-      city: row.CITY,
+      name: row.Place,
+      city: row.City,
       cityId: rowToCityId(row),
-      stateAbbreviation: row.STATE, // TODO convert to abbreviation
+      purpose: row.Purpose, // "community center" or "school"
+      stateAbbreviation: StateAbbreviations[row.State],
       threatDates: threatDates
     }
   })
@@ -72,7 +75,7 @@ function loadCitiesGeojson() {
   const caGeos = [
     {
       "type": "Feature",
-      "properties": { "id": "London, Canada Ontario" },
+      "properties": { "id": "London Ontario" },
       "geometry": { "type": "Point", "coordinates": [ -81.2453, 42.9849 ] }
     }
   ]
@@ -180,18 +183,19 @@ function replaceSvgCitiesWithPlaces(svg, places) {
 
     // 3. Calculate the weighted x/y for each cluster
     return clusters.map(cluster => {
-      const threats = [].concat(...cluster.places.map(p => p.threats)).sort((a, b) => {
-        return (
-          a.date.localeCompare(b.date) // ASCII = chronological
-          ||
-          a.city.localeCompare(b.city)
+      cluster.places.sort((a, b) => {
+        return (a.stateAbbreviation.localeCompare(b.stateAbbreviation)
+                ||
+                a.city.localeCompare(b.city)
         )
       })
 
       return {
         x: Math.round(cluster.xSum / cluster.places.length),
         y: Math.round(cluster.ySum / cluster.places.length),
-        places: cluster.places
+        places: cluster.places,
+        schools: cluster.places.filter(p => p.purpose === 'school'),
+        communityCenters: cluster.places.filter(p => p.purpose === 'community center')
       }
     })
   }
@@ -227,17 +231,19 @@ function replaceSvgCitiesWithPlaces(svg, places) {
       ))
     }
 
-    const svgPlaces = cluster.places.map(place => {
+    function placeToSvgPlace(place) {
       return {
         city: place.city,
         stateAbbreviation: place.stateAbbreviation,
-        name: escape_html(place.name),
-        threatDates: place.threatDates
+        name: place.name,
       }
-    })
+    }
 
     children.push(new XmlElement(
-      'desc', {}, [ JSON.stringify(svgPlaces) ]
+      'desc', {}, [ escape_html(JSON.stringify({
+        schools: cluster.schools.map(placeToSvgPlace),
+        communityCenters: cluster.communityCenters.map(placeToSvgPlace)
+      })) ]
     ))
 
     return new XmlElement('g', {}, children)
@@ -318,10 +324,10 @@ function getWrapperHtml() {
     .filter(s => /^\d\d\d\d-\d\d-\d\d$/.test(s)) // dates
     .sort().reverse()[0]
 
-  const nPlaces = tsv
-    .split(/\r?\n/).slice(1) // body rows
-    .filter(s => s.length)   // nix empty lines
-    .length
+  const places = loadThreatenedPlaces()
+  const nThreats = places.reduce(((s, place) => s + place.threatDates.length), 0)
+  const nSchools = places.filter(p => p.purpose === 'school').length
+  const nCommunityCenters = places.filter(p => p.purpose === 'community center').length
 
   const css = loadCss(`${__dirname}/../data/html-styles.scss`)
   return [
@@ -330,8 +336,9 @@ function getWrapperHtml() {
       '<figcaption>Jewish Community Centers Threatened In 2017</figcaption>',
       '<div class="summary">',
         '<ul class="summary">',
-          '<li class="n-total"><span class="count">166</span><span class="description">JCC Association locations in<br/>the United States and Canada</span></li>',
-          `<li class="n-threatened"><span class="count">${nPlaces}</span><span class="description">Locations received bomb threats</span></li>`,
+          `<li class="n-total"><span class="count">${nThreats}</span><span class="description"> bomb threats</li>`,
+          `<li class="n-threats"><span class="count">${nCommunityCenters}</span><span class="description">Jewish community centers</span></li>`,
+          `<li class="n-threats"><span class="count">${nSchools}</span><span class="description">Jewish schools</span></li>`,
         '</ul>',
       '</div>',
       `<div class="svg-container"></div>`,

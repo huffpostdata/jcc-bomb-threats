@@ -109,14 +109,23 @@
       list-style: none;
       margin: 0;
       padding: 0;
+      display: inline;
+      color: $line-color;
     }
 
     li {
-      margin: .25rem 0;
+      display: inline;
+      margin: 0;
       padding: 0;
+      &::before {
+        content: '; ';
+      }
+      &:first-child::before {
+        content: '';
+      }
     }
 
-    span.time {
+    time {
       display: inline-block;
     }
 
@@ -125,7 +134,7 @@
     }
 
     span.place {
-      display: block;
+      display: none;
       font-size: .8rem;
       font-style: italic;
       color: #666;
