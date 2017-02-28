@@ -154,14 +154,19 @@ function loadSvg() {
   return withClasses
 }
 
-function svgToAspectRatio(svg) {
+function svgProperties(svg) {
   const viewBoxM = /\sviewBox="0 0 (\d+) (\d+)"/.exec(svg)
   if (!viewBoxM) {
     throw new Error(`Could not read viewBox from SVG`)
   }
   const width = +viewBoxM[1]
   const height = +viewBoxM[2]
-  return width / height;
+
+  return {
+    width: width,
+    height: height,
+    aspectRatio: width / height
+  }
 }
 
 const Months = [ 'Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.' ];
@@ -174,14 +179,16 @@ function formatDateSWithYear(dateS) {
   return formatDateS(dateS) + ', ' + dateS.slice(0, 4)
 }
 
+const tsvBlob = fs.readFileSync(`${__dirname}/google-sheets/threats.tsv`)
+const tsv = tsvBlob.toString('utf-8')
+const Dates = tsv
+  .split(/\r?\n/, 2)[0] // header row as String
+  .split(/\t/)          // headers
+  .filter(s => /^\d\d\d\d-\d\d-\d\d$/.test(s)) // dates
+  .sort()
+
 function getWrapperHtml() {
-  const tsvBlob = fs.readFileSync(`${__dirname}/google-sheets/threats.tsv`)
-  const tsv = tsvBlob.toString('utf-8')
-  const lastDate = tsv
-    .split(/\r?\n/, 2)[0] // header row as String
-    .split(/\t/)          // headers
-    .filter(s => /^\d\d\d\d-\d\d-\d\d$/.test(s)) // dates
-    .sort().reverse()[0]
+  const lastDate = Dates[Dates.length - 1]
 
   const places = PlacesWithXY
   const nThreats = places.reduce(((s, place) => s + place.threatDates.length), 0)
@@ -209,8 +216,10 @@ function getWrapperHtml() {
 
 const svg = loadSvg()
 
-module.exports = {
-  aspectRatio: svgToAspectRatio(svg),
+module.exports = Object.assign(svgProperties(svg), {
+  dates: Dates,
+  firstDate: Dates[0],
+  lastDate: Dates[Dates.length - 1],
   svg: svg,
   html: getWrapperHtml()
-}
+})
