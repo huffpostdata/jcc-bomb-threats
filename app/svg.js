@@ -300,15 +300,14 @@ function svgToAspectRatio(svg) {
   return width / height;
 }
 
-var Months = [ 'Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.' ];
+const Months = [ 'Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.' ];
 function formatDateS(dateS) {
-  var year = parseFloat(dateS.slice(0, 4));
-  var month = parseFloat(dateS.slice(5, 7));
-  var day = parseFloat(dateS.slice(8, 10));
-  return Months[month - 1] + ' ' + day;
+  const month = parseFloat(dateS.slice(5, 7))
+  const day = parseFloat(dateS.slice(8, 10))
+  return Months[month - 1] + ' ' + day
 }
-function formatDateWithYear(date) {
-  return Months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear();
+function formatDateSWithYear(dateS) {
+  return formatDateS(dateS) + ', ' + dateS.slice(0, 4)
 }
 
 function getWrapperHtml() {
@@ -336,7 +335,7 @@ function getWrapperHtml() {
         '</ul>',
       '</div>',
       `<div class="svg-container"></div>`,
-      `<div class="last-updated">Data current as of ${formatDateWithYear(new Date())}</div>`,
+      `<div class="last-updated">Data current as of ${formatDateSWithYear(lastDate)}</div>`,
     '</figure>',
   ].join('')
 }
