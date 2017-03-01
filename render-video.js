@@ -3,7 +3,7 @@
 
 const NFrames = 160
 const Title = 'Bomb Threats At Jewish Community Centers And Schools In 2017'
-const Red = '#e34433'
+const Red = 'rgba(220, 21, 0, 0.8)'
 const Gray = '#6d6e71'
 const SkipDateLabels = { '2017-02-23': null }
 const DateFontSize = 36
