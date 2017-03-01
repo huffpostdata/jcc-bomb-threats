@@ -5,6 +5,10 @@ const NFrames = 160
 const Title = 'Bomb Threats At Jewish Community Centers And Schools In 2017'
 const Red = '#e34433'
 const Gray = '#6d6e71'
+const SkipDateLabels = { '2017-02-23': null }
+const DateFontSize = 36
+const TitleFontSize = 70
+const NumberFontSize = 36
 
 process.env.FONTCONFIG_PATH = require('path').resolve(__dirname, '../raw-assets/fonts')
 
@@ -14,7 +18,7 @@ const child_process = require('child_process')
 const Color = require('color')
 const svg = require('./app/svg')
 const Width = svg.width
-const ProgressHeight = 150
+const ProgressHeight = 200
 const Height = svg.height + ProgressHeight
 const T0 = Date.parse(svg.firstDate + 'T00:00Z') - 2 * 86400000
 const T1 = Date.parse(svg.lastDate + 'T23:59Z') + 86400000
@@ -110,13 +114,18 @@ drawSvgPathD(ctx, pathD)
 ctx.stroke()
 ctx.restore()
 
+ctx.fillStyle = 'black'
+ctx._setFont('900', 'normal', TitleFontSize, 'pt', 'Proxima Nova Condensed')
+const titleMetrics = ctx.measureText(Title)
+ctx.fillText(Title, (Width - titleMetrics.width) / 2, 60)
+
 const baseImageData = ctx.getImageData(0, 0, Width, Height)
 
 const DateRange = {
   // Returns the fill this dateS should have when t=time
   dateSStyleAtTime(dateS, time) {
     const nDays = (time - Date.parse(dateS + 'T00:00Z')) / 86400000
-    const NDesaturationDays = 8
+    const NDesaturationDays = 10
 
     if (nDays <= 0) {
       return null
@@ -129,12 +138,12 @@ const DateRange = {
       const desaturation = (nDays - 1) / NDesaturationDays;
       return {
         r: 1,
-        fill: Color(Red).desaturate(desaturation).fade(desaturation / 1.2).rgb().string()
+        fill: Color(Red).desaturate(desaturation).fade(desaturation / 1.4).rgb().string()
       }
     } else {
       return {
         r: 1,
-        fill: Color(Red).desaturate(1).fade(1/1.2).rgb().string()
+        fill: Color(Red).desaturate(1).fade(1/1.4).rgb().string()
       }
     }
   },
@@ -156,12 +165,12 @@ function initDateTexts() {
     ctx.fillStyle = 'white'
     ctx.fillRect(0, 0, Width, 100)
     ctx.fillStyle = 'black'
-    ctx._setFont('400', 'normal', 24, 'pt', 'Proxima Nova Regular')
+    ctx._setFont('400', 'normal', DateFontSize, 'pt', 'Proxima Nova Regular')
     const text = formatDateS(dateS)
     const metrics = ctx.measureText(text)
-    ctx.fillText(text, 0, 20)
+    ctx.fillText(text, 0, DateFontSize)
 
-    ctx._setFont('900', 'normal', 32, 'pt', 'Proxima Nova Condensed')
+    ctx._setFont('900', 'normal', NumberFontSize, 'pt', 'Proxima Nova Condensed')
     const nThreats = PlacesWithXY.filter(p => p.threatDates.indexOf(dateS) !== -1).length
     const numberMetrics = ctx.measureText(String(nThreats))
 
@@ -171,7 +180,7 @@ function initDateTexts() {
       nThreatsText: String(nThreats),
       nThreatsWidth: numberMetrics.width,
       width: metrics.width,
-      imageData: ctx.getImageData(0, 0, metrics.width, 30)
+      imageData: ctx.getImageData(0, 0, metrics.width, DateFontSize * 1.2)
     })
   }
 
@@ -181,10 +190,10 @@ function initDateTexts() {
 const DateTexts = initDateTexts()
 function drawProgressBar(t) {
   const ProgressTop = 0
-  const LineTop = 80
-  const LineMiddle = 84
+  const LineTop = 120
+  const LineMiddle = 124
   const LineHeight = 8
-  const CircleR = 24
+  const CircleR = 32
 
   const dateFractions = []
   for (const dateS of svg.dates) {
@@ -212,18 +221,16 @@ function drawProgressBar(t) {
   ctx.fill()
 
   ctx.fillStyle = 'black'
-  ctx._setFont('900', 'normal', 40, 'pt', 'Proxima Nova Condensed')
-  const titleMetrics = ctx.measureText(Title)
-  ctx.fillText(Title, (Width - titleMetrics.width) / 2, 40)
-
   for (const dateText of DateTexts) {
-    ctx.putImageData(dateText.imageData, Width * dateText.t - dateText.imageData.width / 2, 110)
+    if (!SkipDateLabels.hasOwnProperty(dateText.dateS)) {
+      ctx.putImageData(dateText.imageData, Width * dateText.t - dateText.imageData.width / 2, 170)
+    }
   }
 
   ctx.fillStyle = 'white'
-  ctx._setFont('900', 'normal', 32, 'pt', 'Proxima Nova Condensed')
+  ctx._setFont('900', 'normal', NumberFontSize, 'pt', 'Proxima Nova Condensed')
   for (const dateText of DateTexts) {
-    ctx.fillText(dateText.nThreatsText, Width * dateText.t - dateText.nThreatsWidth / 2, 94)
+    ctx.fillText(dateText.nThreatsText, Width * dateText.t - dateText.nThreatsWidth / 2, 136)
   }
 }
 
