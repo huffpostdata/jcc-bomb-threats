@@ -6,9 +6,9 @@ const Title = 'Bomb Threats At Jewish Community Centers And Schools In 2017'
 const Red = 'rgba(220, 21, 0, 0.8)'
 const Gray = '#86888c'
 const SkipDateLabels = { '2017-02-23': null }
-const DateFontSize = 36
-const TitleFontSize = 70
-const NumberFontSize = 36
+const DateFontSize = 40
+const TitleFontSize = 75
+const NumberFontSize = 40
 
 process.env.FONTCONFIG_PATH = require('path').resolve(__dirname, '../raw-assets/fonts')
 
@@ -18,8 +18,8 @@ const child_process = require('child_process')
 const Color = require('color')
 const svg = require('./app/svg')
 const Width = svg.width
-const ProgressHeight = 200
-const Height = svg.height + ProgressHeight
+const ProgressHeight = 560
+const Height = Width
 const T0 = Date.parse(svg.firstDate + 'T00:00Z') - 2 * 86400000
 const T1 = Date.parse(svg.lastDate + 'T23:59Z') + 86400000
 
@@ -117,7 +117,7 @@ ctx.restore()
 ctx.fillStyle = 'black'
 ctx._setFont('900', 'normal', TitleFontSize, 'pt', 'Proxima Nova Condensed')
 const titleMetrics = ctx.measureText(Title)
-ctx.fillText(Title, (Width - titleMetrics.width) / 2, 60)
+ctx.fillText(Title, (Width - titleMetrics.width) / 2, 280)
 
 const baseImageData = ctx.getImageData(0, 0, Width, Height)
 
@@ -189,10 +189,10 @@ function initDateTexts() {
 
 const DateTexts = initDateTexts()
 function drawProgressBar(t) {
-  const ProgressTop = 0
-  const LineTop = 120
-  const LineMiddle = 124
-  const LineHeight = 8
+  const ProgressTop = 280
+  const LineTop = 120 + ProgressTop
+  const LineMiddle = LineTop + 5
+  const LineHeight = 10
   const CircleR = 32
 
   const dateFractions = []
@@ -223,14 +223,14 @@ function drawProgressBar(t) {
   ctx.fillStyle = 'black'
   for (const dateText of DateTexts) {
     if (!SkipDateLabels.hasOwnProperty(dateText.dateS)) {
-      ctx.putImageData(dateText.imageData, Width * dateText.t - dateText.imageData.width / 2, 170)
+      ctx.putImageData(dateText.imageData, Width * dateText.t - dateText.imageData.width / 2, LineMiddle + 60)
     }
   }
 
   ctx.fillStyle = 'white'
   ctx._setFont('900', 'normal', NumberFontSize, 'pt', 'Proxima Nova Condensed')
   for (const dateText of DateTexts) {
-    ctx.fillText(dateText.nThreatsText, Width * dateText.t - dateText.nThreatsWidth / 2, 136)
+    ctx.fillText(dateText.nThreatsText, Width * dateText.t - dateText.nThreatsWidth / 2, LineMiddle + 14)
   }
 }
 
