@@ -269,7 +269,7 @@ function renderRawFrameData(t) {
   return canvas.toBuffer('raw')
 }
 
-const ffmpeg = child_process.spawn('ffmpeg', `-f rawvideo -vcodec rawvideo -s ${Width}x${Height} -pix_fmt bgra -i - -c:v libx264 -tune animation -profile:v baseline -level 3.0 -vf format=yuv420p -r 25 -qp 1 -y video.mp4`.split(' '), {
+const ffmpeg = child_process.spawn('ffmpeg', `-f rawvideo -vcodec rawvideo -s ${Width}x${Height} -pix_fmt bgra -i - -c:v libx264 -tune animation -profile:v baseline -level 3.0 -vf format=yuv420p,scale=1200x1200 -r 25 -qp 1 -y video.mp4`.split(' '), {
   stdio: [ 'pipe', process.stdout, process.stderr ],
   maxBuffer: 2 * Width * Height * 4
 })
