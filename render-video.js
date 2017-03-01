@@ -1,17 +1,23 @@
 #!/usr/bin/env node
 'use strict'
 
+const NFrames = 160
+const Title = 'Bomb Threats At Jewish Community Centers And Schools In 2017'
+const Red = '#e34433'
+const Gray = '#6d6e71'
+
+process.env.FONTCONFIG_PATH = require('path').resolve(__dirname, '../raw-assets/fonts')
+
+const formatDateS = require('./app/formatDateS')
 const PlacesWithXY = require('./app/PlacesWithXY')
 const child_process = require('child_process')
 const Color = require('color')
 const svg = require('./app/svg')
 const Width = svg.width
-const ProgressHeight = 80
+const ProgressHeight = 150
 const Height = svg.height + ProgressHeight
 const T0 = Date.parse(svg.firstDate + 'T00:00Z') - 2 * 86400000
 const T1 = Date.parse(svg.lastDate + 'T23:59Z') + 86400000
-const Red = '#e34433'
-const Gray = '#6d6e71'
 
 const pathD = svg.svg
   .replace(/r?\n/g, '')
@@ -110,7 +116,7 @@ const DateRange = {
   // Returns the fill this dateS should have when t=time
   dateSStyleAtTime(dateS, time) {
     const nDays = (time - Date.parse(dateS + 'T00:00Z')) / 86400000
-    const NDesaturationDays = 12
+    const NDesaturationDays = 8
 
     if (nDays <= 0) {
       return null
@@ -123,12 +129,12 @@ const DateRange = {
       const desaturation = (nDays - 1) / NDesaturationDays;
       return {
         r: 1,
-        fill: Color(Red).desaturate(desaturation).fade(desaturation / 2).rgb().string()
+        fill: Color(Red).desaturate(desaturation).fade(desaturation / 1.2).rgb().string()
       }
     } else {
       return {
         r: 1,
-        fill: Color(Red).desaturate(1).fade(0.5).rgb().string()
+        fill: Color(Red).desaturate(1).fade(1/1.2).rgb().string()
       }
     }
   },
@@ -143,11 +149,42 @@ const DateRange = {
   }
 }
 
+function initDateTexts() {
+  const ret = []
+
+  for (const dateS of svg.dates) {
+    ctx.fillStyle = 'white'
+    ctx.fillRect(0, 0, Width, 100)
+    ctx.fillStyle = 'black'
+    ctx._setFont('400', 'normal', 24, 'pt', 'Proxima Nova Regular')
+    const text = formatDateS(dateS)
+    const metrics = ctx.measureText(text)
+    ctx.fillText(text, 0, 20)
+
+    ctx._setFont('900', 'normal', 32, 'pt', 'Proxima Nova Condensed')
+    const nThreats = PlacesWithXY.filter(p => p.threatDates.indexOf(dateS) !== -1).length
+    const numberMetrics = ctx.measureText(String(nThreats))
+
+    ret.push({
+      dateS: dateS,
+      t: (Date.parse(dateS + 'T00:00Z') - T0) / (T1 - T0),
+      nThreatsText: String(nThreats),
+      nThreatsWidth: numberMetrics.width,
+      width: metrics.width,
+      imageData: ctx.getImageData(0, 0, metrics.width, 30)
+    })
+  }
+
+  return ret
+}
+
+const DateTexts = initDateTexts()
 function drawProgressBar(t) {
   const ProgressTop = 0
-  const ProgressMiddle = ProgressTop + ProgressHeight / 2
+  const LineTop = 80
+  const LineMiddle = 84
   const LineHeight = 8
-  const CircleR = 16
+  const CircleR = 24
 
   const dateFractions = []
   for (const dateS of svg.dates) {
@@ -156,23 +193,38 @@ function drawProgressBar(t) {
 
   ctx.fillStyle = Gray
   ctx.beginPath()
-  ctx.rect(0, ProgressMiddle - LineHeight / 2, Width, LineHeight)
+  ctx.rect(0, LineTop, Width, LineHeight)
   for (const dateFraction of dateFractions) {
-    ctx.arc(Width * dateFraction, ProgressMiddle, CircleR, 0, Math.PI * 2)
+    ctx.arc(Width * dateFraction, LineMiddle, CircleR, 0, Math.PI * 2)
     ctx.closePath()
   }
   ctx.fill()
 
   ctx.fillStyle = Red
   ctx.beginPath()
-  ctx.rect(0, ProgressMiddle - LineHeight / 2, t * Width, LineHeight)
+  ctx.rect(0, LineTop, t * Width, LineHeight)
   for (const dateFraction of dateFractions) {
     if (dateFraction <= t) {
-      ctx.arc(Width * dateFraction, ProgressMiddle, CircleR, 0, Math.PI * 2)
+      ctx.arc(Width * dateFraction, LineMiddle, CircleR, 0, Math.PI * 2)
       ctx.closePath()
     }
   }
   ctx.fill()
+
+  ctx.fillStyle = 'black'
+  ctx._setFont('900', 'normal', 40, 'pt', 'Proxima Nova Condensed')
+  const titleMetrics = ctx.measureText(Title)
+  ctx.fillText(Title, (Width - titleMetrics.width) / 2, 40)
+
+  for (const dateText of DateTexts) {
+    ctx.putImageData(dateText.imageData, Width * dateText.t - dateText.imageData.width / 2, 110)
+  }
+
+  ctx.fillStyle = 'white'
+  ctx._setFont('900', 'normal', 32, 'pt', 'Proxima Nova Condensed')
+  for (const dateText of DateTexts) {
+    ctx.fillText(dateText.nThreatsText, Width * dateText.t - dateText.nThreatsWidth / 2, 94)
+  }
 }
 
 // From t=0..1, return raw RGBA/ABGR pixel data for a frame of animation
@@ -189,7 +241,7 @@ function renderRawFrameData(t) {
       if (style !== null) {
         ctx.beginPath()
         ctx.fillStyle = style.fill
-        ctx.arc(place.x, place.y, 20 * style.r, 0, Math.PI * 2)
+        ctx.arc(place.x, place.y, 12 * style.r, 0, Math.PI * 2)
         ctx.closePath()
         ctx.fill()
       }
@@ -207,9 +259,14 @@ const ffmpeg = child_process.spawn('ffmpeg', `-f rawvideo -vcodec rawvideo -s ${
   maxBuffer: 2 * Width * Height * 4
 })
 
-const NFrames = 120
+let buf
 for (let frame = 0; frame < NFrames; frame++) {
-  const buf = renderRawFrameData(frame / NFrames)
+  buf = renderRawFrameData(frame / NFrames)
+  ffmpeg.stdin.write(buf)
+}
+
+// Copy last frame a few times
+for (let i = 0; i < 40; i++) {
   ffmpeg.stdin.write(buf)
 }
 ffmpeg.stdin.end()

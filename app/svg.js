@@ -2,6 +2,7 @@ const fs = require('fs')
 const sass = require('node-sass')
 const escape_html = require('../generator/escape_html')
 const kdbush = require('kdbush')
+const formatDateS = require('./formatDateS')
 
 const PlacesWithXY = require('./PlacesWithXY')
 
@@ -169,12 +170,6 @@ function svgProperties(svg) {
   }
 }
 
-const Months = [ 'Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.' ];
-function formatDateS(dateS) {
-  const month = parseFloat(dateS.slice(5, 7))
-  const day = parseFloat(dateS.slice(8, 10))
-  return Months[month - 1] + ' ' + day
-}
 function formatDateSWithYear(dateS) {
   return formatDateS(dateS) + ', ' + dateS.slice(0, 4)
 }
