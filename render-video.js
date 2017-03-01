@@ -2,12 +2,12 @@
 'use strict'
 
 const NFrames = 160
-const Title = 'Bomb Threats At Jewish Community Centers And Schools In 2017'
+const Title = 'Bomb Threats At JCCs And Jewish Schools In 2017'
 const Red = 'rgba(220, 21, 0, 0.8)'
 const Gray = '#86888c'
 const SkipDateLabels = { '2017-02-23': null }
 const DateFontSize = 40
-const TitleFontSize = 75
+const TitleFontSize = 90
 const NumberFontSize = 40
 
 process.env.FONTCONFIG_PATH = require('path').resolve(__dirname, '../raw-assets/fonts')
@@ -118,6 +118,14 @@ ctx.fillStyle = 'black'
 ctx._setFont('900', 'normal', TitleFontSize, 'pt', 'Proxima Nova Condensed')
 const titleMetrics = ctx.measureText(Title)
 ctx.fillText(Title, (Width - titleMetrics.width) / 2, 280)
+
+ctx.save()
+ctx.fillStyle = '#cccccc'
+ctx.translate(Width - 36, 1460)
+ctx.rotate(Math.PI / 2)
+ctx._setFont('400', 'normal', 30, 'pt', 'Proxima Nova Regular')
+ctx.fillText('@HUFFINGTONPOST', 0, 0)
+ctx.restore()
 
 const baseImageData = ctx.getImageData(0, 0, Width, Height)
 
