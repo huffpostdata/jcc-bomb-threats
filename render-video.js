@@ -273,7 +273,7 @@ for (let frame = 0; frame < NFrames; frame++) {
 }
 
 // Copy last frame a few times
-for (let i = 0; i < 40; i++) {
+for (let i = 0; i < 50; i++) {
   ffmpeg.stdin.write(buf)
 }
 ffmpeg.stdin.end()
