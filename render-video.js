@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 'use strict'
 
-const NFrames = 160
+const FrameRate = 40
+const NFrames = FrameRate * 5 // <6.5s => auto-loop on Twitter
+const NEndFrames = FrameRate
 const Title = 'Bomb Threats At JCCs And Jewish Schools In 2017'
 const Red = 'rgba(220, 21, 0, 0.8)'
 const Gray = '#86888c'
@@ -269,7 +271,8 @@ function renderRawFrameData(t) {
   return canvas.toBuffer('raw')
 }
 
-const ffmpeg = child_process.spawn('ffmpeg', `-f rawvideo -vcodec rawvideo -s ${Width}x${Height} -pix_fmt bgra -i - -c:v libx264 -tune animation -profile:v baseline -level 3.0 -vf format=yuv420p,scale=1200x1200 -r 25 -qp 1 -y video.mp4`.split(' '), {
+// Ordering matters in these arguments.
+const ffmpeg = child_process.spawn('ffmpeg', `-f rawvideo -vcodec rawvideo -s ${Width}x${Height} -pix_fmt bgra -r ${FrameRate} -i - -c:v libx264 -tune animation -profile:v baseline -level 3.0 -vf format=yuv420p,scale=1200x1200 -qp 1 -y video.mp4`.split(' '), {
   stdio: [ 'pipe', process.stdout, process.stderr ],
   maxBuffer: 2 * Width * Height * 4
 })
@@ -281,7 +284,7 @@ for (let frame = 0; frame < NFrames; frame++) {
 }
 
 // Copy last frame a few times
-for (let i = 0; i < 50; i++) {
+for (let frame = 0; frame < NEndFrames; frame++) {
   ffmpeg.stdin.write(buf)
 }
 ffmpeg.stdin.end()
