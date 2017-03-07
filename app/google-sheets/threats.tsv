@@ -33,7 +33,7 @@ JCC of Middlesex County	community center	Edison	NJ		X
 JCC of the Greater St. Paul Area	community center	Saint Paul	MN				X			
 JCC of Toledo	community center	Sylvania	OH			X				
 JCCs of Greater Boston	community center	Newton Centre	MA		X					
-Jewish Community Alliance of Southern Maine	community center	Portland	ME		X					X
+Jewish Community Alliance of Southern Maine	community center	Portland	ME		X					
 Jewish Community Center of Binghamton	community center	Vestal	NY			X				
 Jewish Community Center of Greater Buffalo	community center	Buffalo	NY				X			
 Jewish Community Center of Syracuse	community center	Syracuse	NY		X	X				
@@ -77,7 +77,7 @@ Lubavitch Jewish Center	community center	Anchorage	AK						X
 Westside JCC	community center	Los Angeles	CA						X	
 Tucson JCC	community center	Tucson	AZ						X	
 N.E. Miles Jewish Day School	school	Birmingham	AL						X	
-Posnack Jewish Day School	school	Davie	FL						X	
+Posnack Jewish Day School	school	Davie	FL						X	X
 Charles E. Smith Jewish Day School	school	Rockville	MD						X	
 The Hebrew Day School of Ann Arbor	school	Ann Arbor	MI						X	
 Charlotte Jewish Day School	school	Charlotte	NC						X	
@@ -87,3 +87,4 @@ Aleph Bet Jewish Day School	school	Annapolis	MD						X
 Temple Emanu-El	school	Honolulu	HI						X	
 JCC Milwaukee	community center	Milwaukee	WI							X
  Louis S. Wolk JCC of Greater Rochester	community center	Rochester	NY							X
+Mittelman JCC	community center	Portland	OR							
