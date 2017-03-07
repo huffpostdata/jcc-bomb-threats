@@ -22,8 +22,8 @@ const svg = require('./app/svg')
 const Width = svg.width
 const ProgressHeight = 560
 const Height = Width
-const T0 = Date.parse(svg.firstDate + 'T00:00Z') - 2 * 86400000
-const T1 = Date.parse(svg.lastDate + 'T23:59Z') + 86400000
+const T0 = Date.parse(svg.firstDate + 'T00:00Z') - 3 * 86400000
+const T1 = Date.parse(svg.lastDate + 'T23:59Z') + 2 * 86400000
 
 const pathD = svg.svg
   .replace(/r?\n/g, '')
