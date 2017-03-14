@@ -23,7 +23,7 @@ tmp/citiesx010g.shp: citiesx010g_shp_nt00962.tar.gz
 	mkdir -p tmp
 	(cd tmp && tar zmxf ../$<)
 
-../../data/cities.geojson: tmp/citiesx010g.shp Makefile
+../../data/cities.geojson: tmp/citiesx010g.shp
 	$(MAPSHAPER) $< encoding=utf-8 \
 		-sort 'this.properties.POP_2010' \
 		-each 'id = NAME + " " + STATE' \
@@ -38,14 +38,14 @@ tmp/citiesx010g.shp: citiesx010g_shp_nt00962.tar.gz
 		-simplify 10% \
 		-o $@
 
-tmp/jcc-threat-map-unoptimized.svg: tmp/states-land.shp
+tmp/jcc-threat-map-unoptimized.svg: tmp/states-land.shp Makefile
 	$(MAPSHAPER) $< \
 		-lines \
 		-filter-fields '' \
 		-rename-layers mesh \
 		-proj albersusa \
-		-simplify planar resolution=1990x1990 stats \
-		-o $@ format=svg precision=1 width=2000 margin=5
+		-simplify planar resolution=1976x1976 stats \
+		-o $@ format=svg precision=1 width=2000 margin=12
 
 ../../data/jcc-threat-map.svg: tmp/jcc-threat-map-unoptimized.svg
 	$(SVGO) $< $@

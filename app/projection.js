@@ -1,7 +1,7 @@
 'use strict'
 
 const OutputWidth = 2000
-const OutputMargin = 5
+const OutputMargin = 12
 const Projection = 'albersusa'
 
 const fs = require('fs')

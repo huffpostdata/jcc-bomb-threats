@@ -56,6 +56,16 @@ function addXYToPlaces(places) {
       "type": "Feature",
       "properties": { "id": "London Ontario" },
       "geometry": { "type": "Point", "coordinates": [ -81.2453, 42.9849 ] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "Toronto Ontario" },
+      "geometry": { "type": "Point", "coordinates": [ -79.3832, 43.6532 ] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "Vancouver British Columbia" },
+      "geometry": { "type": "Point", "coordinates": [ -123.1207, 49.2827 ] }
     }
   ]
   const cityGeos = usGeos.concat(caGeos)

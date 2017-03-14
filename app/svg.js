@@ -6,7 +6,7 @@ const formatDateS = require('./formatDateS')
 
 const PlacesWithXY = require('./PlacesWithXY')
 
-const ClusterRadius = 80
+const ClusterRadius = 85
 const PointRadius = 40
 
 function loadCss(filePath) {

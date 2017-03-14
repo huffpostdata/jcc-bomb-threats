@@ -1,91 +1,96 @@
-Place	Purpose	City	State	2017-01-09	2017-01-18	2017-01-31	2017-02-20	2017-02-23	2017-02-27	2017-03-07	2017-03-08	2017-03-09	2017-03-10	2017-03-12
-Adolph and Rose Levis JCC	community center	Boca Raton	FL	X										
-Augusta Jewish Community Center	community center	Augusta	GA	X										
-Bender JCC of Greater Washington 	community center	Rockville	MD	X						X				
-Dave & Mary Alper JCC	community center	Miami	FL	X										
-Galbut Family Miami Beach JCC	community center	Miami Beach	FL	X	X									
-Gordon JCC	community center	Nashville	TN	X	X		X							
-JCCs of Greater Baltimore	community center	Baltimore	MD	X	X									
-Jewish Community Alliance of Jacksonville	community center	Jacksonville	FL	X										
-Kaplen JCC on the Palisades	community center	Tenafly	NJ	X		X								
-Katie and Irwin Kahn Jewish Community Center	community center	Columbia	SC	X										
-Marcus JCC of Atlanta	community center	Atlanta	GA	X										
-Roth Family JCC of Greater Orlando	community center	Orlando	FL	X	X									
-Siegel JCC	community center	Wilmington	DE	X	X				X		X			X
-Tampa JCCs and Jewish Federation (Off-site preschool only)	community center	Tampa	FL	X			X							
-Aaron Family JCC of Dallas	community center	Dallas	TX		X									
-Barbara & Ray Alpert	community center	Long Beach	CA			X								
-Barry & Florence Friedberg JCC	community center	Oceanside	NY		X									
-Boulder Jewish Community Center	community center	Boulder	CO			X								
-Evelyn Rubenstein Jewish Community Center of Houston	community center	Houston	TX				X							
-Hyde Park JCC (part of JCC Chicago)	community center	Chicago	IL				X							X
-I.J. Jeanne Wagner Jewish Community Center	community center	Salt Lake City	UT			X								
-JCC Apachi Day Camp	community center	Lake Zurich	IL			X								
-JCC in Manhattan	community center	Manhattan	NY		X									
-JCC MetroWest	community center	West Orange	NJ			X								
-JCC of Centrol New Jersey 	community center	Scotch Plains	NJ		X									
-JCC of Greater Albuquerque	community center	Albuquerque	NM			X	X							
-JCC of Greater Kansas City	community center	Kansas City	KS		X									
-JCC of Greater New Haven	community center	New Haven	CT		X	X								
-JCC of London	community center	London	Ontario			X								
-JCC of Metropolitian Detroit	community center	Detroit	MI		X									
-JCC of Middlesex County	community center	Edison	NJ		X									
-JCC of the Greater St. Paul Area	community center	Saint Paul	MN				X							
-JCC of Toledo	community center	Sylvania	OH			X								
-JCCs of Greater Boston	community center	Newton Centre	MA		X									
-Jewish Community Alliance of Southern Maine	community center	Portland	ME		X									
-Jewish Community Center of Binghamton	community center	Vestal	NY			X								
-Jewish Community Center of Greater Buffalo	community center	Buffalo	NY				X							
-Jewish Community Center of Syracuse	community center	Syracuse	NY		X	X								
-Jewish Federation of Tulsa	community center	Tulsa	OK				X							
-Lawrence Family JCC	community center	San Diego	CA			X			X		X			
-Levite JCC	community center	Birmingham	AL		X		X		X					
-Mandel JCC of Cleveland	community center	Cleveland	OH				X							X
-Mandel JCC of Palm Beaches	community center	Palm Beach Gardens	FL		X									
-Mandell JCC of Greater Hartford	community center	Hartford	CT		X									
-Mayerson JCC	community center	Cincinnati	OH		X									
-Osher Marin JCC	community center	San Rafael	CA		X									
-Sabes JCC	community center	Minneapolis	MN		X									
-Sandra and Leon Levine Jewish Community Center	community center	Charlotte	NC		X									
-Sidney Albert Albany JCC	community center	Albany	NY		X	X								
-St. Louis Jewish Community Center	community center	Saint Louis	MO		X									
-The Harry & Rose Samson Family Jewish Community Center	community center	Whitefish Bay	WI			X	X							
-The Jewish Community Center of Greatert Columbus	community center	Columbus	OH		X									
-Worcester JCC	community center	Worcester	MA		X	X								
-New Orleans JCC	community center	New Orleans	LA					X						
-Amherst JCC	community center	Amherst	NY				X							
-David Posnack JCC	community center	Davie	FL						X					
-JCC Indianapolis	community center	Indianapolis	IN						X					X
-Jewish Federation of Greater Harrisburg	community center	Harrisburg	PA						X					
-York JCC	community center	York	PA						X					
-Katz JCC	community center	Cherry Hill	NJ						X					
-Asheville JCC	community center	Asheville	NC						X					
-Jewish Community Center of Greater Ann Arbor	community center	Ann Arbor	MI						X					
-JCC On The Hudson	community center	Tarrytown	NY						X					
-JCC of Mid-Westchester	community center	Scarsdale	NY						X					
-JCC Staten Island	community center	Staten Island	NY						X					
-Mid-Island Y JCC	community center	Plainview	NY						X					
-JCC of Greater Baltimore	community center	Owings Mills	MD						X					
-Valley of the Sun JCC	community center	Phoenix	AZ						X					
-Oshman Family JCC	community center	Palo Alto	CA						X					
-Stroum JCC	community center	Mercer Island	WA						X					
-Jewish Community Center of Southern Nevada	community center	Las Vegas	NV						X				X	
-Merage JCC	community center	Irvine	CA						X					
-Providence JCC	community center	Providence	RI						X					
-Lubavitch Jewish Center	community center	Anchorage	AK						X					
-Westside JCC	community center	Los Angeles	CA						X			X		
-Tucson JCC	community center	Tucson	AZ						X					
-N.E. Miles Jewish Day School	school	Birmingham	AL						X					
-Posnack Jewish Day School	school	Davie	FL						X	X				
-Charles E. Smith Jewish Day School	school	Rockville	MD						X					
-The Hebrew Day School of Ann Arbor	school	Ann Arbor	MI						X					
-Charlotte Jewish Day School	school	Charlotte	NC						X					
-Perelman Jewish Day School	school	Wynnewood	PA						X					
-Gesher Jewish Day School	school	Fairfax	VA						X					
-Aleph Bet Jewish Day School	school	Annapolis	MD						X					
-Temple Emanu-El	school	Honolulu	HI						X					
-Harry & Rose Samson JCC	community center	Milwaukee	WI							X				X
- Louis S. Wolk JCC of Greater Rochester	community center	Rochester	NY							X				X
-Mittelman JCC	community center	Portland	OR							X				
-Louisville JCC	community center	Louisville	KY								X			
-Addison-Penzak JCC	community center	Los Gatos	CA									X		
+Place	Purpose	City	State	2017-01-09	2017-01-18	2017-01-31	2017-02-20	2017-02-23	2017-02-27	2017-03-03	2017-03-07	2017-03-08	2017-03-09	2017-03-10	2017-03-12
+Adolph and Rose Levis JCC	community center	Boca Raton	FL	X											
+Augusta Jewish Community Center	community center	Augusta	GA	X											
+Bender JCC of Greater Washington 	community center	Rockville	MD	X							X				
+Dave & Mary Alper JCC	community center	Miami	FL	X											
+Galbut Family Miami Beach JCC	community center	Miami Beach	FL	X	X										
+Gordon JCC	community center	Nashville	TN	X	X		X								
+JCCs of Greater Baltimore	community center	Baltimore	MD	X	X										
+Jewish Community Alliance of Jacksonville	community center	Jacksonville	FL	X											
+Kaplen JCC on the Palisades	community center	Tenafly	NJ	X		X									
+Katie and Irwin Kahn Jewish Community Center	community center	Columbia	SC	X											
+Marcus JCC of Atlanta	community center	Atlanta	GA	X											
+Roth Family JCC of Greater Orlando	community center	Orlando	FL	X	X										
+Siegel JCC	community center	Wilmington	DE	X	X				X			X			X
+Tampa JCCs and Jewish Federation (Off-site preschool only)	community center	Tampa	FL	X			X								
+Aaron Family JCC of Dallas	community center	Dallas	TX		X										
+Barbara & Ray Alpert	community center	Long Beach	CA			X									
+Barry & Florence Friedberg JCC	community center	Oceanside	NY		X										
+Boulder Jewish Community Center	community center	Boulder	CO			X									
+Evelyn Rubenstein Jewish Community Center of Houston	community center	Houston	TX				X								X
+Hyde Park JCC (part of JCC Chicago)	community center	Chicago	IL				X								X
+I.J. Jeanne Wagner Jewish Community Center	community center	Salt Lake City	UT			X									
+JCC Apachi Day Camp	community center	Lake Zurich	IL			X									
+JCC in Manhattan	community center	Manhattan	NY		X										
+JCC MetroWest	community center	West Orange	NJ			X									
+JCC of Centrol New Jersey 	community center	Scotch Plains	NJ		X										
+JCC of Greater Albuquerque	community center	Albuquerque	NM			X	X								
+JCC of Greater Kansas City	community center	Kansas City	KS		X										
+JCC of Greater New Haven	community center	New Haven	CT		X	X									
+JCC of London	community center	London	Ontario			X									
+JCC of Metropolitian Detroit	community center	Detroit	MI		X										
+JCC of Middlesex County	community center	Edison	NJ		X										
+JCC of the Greater St. Paul Area	community center	Saint Paul	MN				X								
+JCC of Toledo	community center	Sylvania	OH			X									
+JCCs of Greater Boston	community center	Newton Centre	MA		X										
+Jewish Community Alliance of Southern Maine	community center	Portland	ME		X										
+Jewish Community Center of Binghamton	community center	Vestal	NY			X									
+Jewish Community Center of Greater Buffalo	community center	Buffalo	NY				X								
+Jewish Community Center of Syracuse	community center	Syracuse	NY		X	X									
+Jewish Federation of Tulsa / Charles Schusterman	community center	Tulsa	OK				X								
+Lawrence Family JCC	community center	San Diego	CA			X			X			X			
+Levite JCC	community center	Birmingham	AL		X		X		X						
+Mandel JCC of Cleveland	community center	Cleveland	OH				X								X
+Mandel JCC of Palm Beaches	community center	Palm Beach Gardens	FL		X										
+Mandell JCC of Greater Hartford	community center	Hartford	CT		X										
+Mayerson JCC	community center	Cincinnati	OH		X										
+Osher Marin JCC	community center	San Rafael	CA		X										
+Sabes JCC	community center	Minneapolis	MN		X										
+Sandra and Leon Levine Jewish Community Center	community center	Charlotte	NC		X										
+Sidney Albert Albany JCC	community center	Albany	NY		X	X									
+St. Louis Jewish Community Center	community center	Saint Louis	MO		X										
+The Harry & Rose Samson Family Jewish Community Center	community center	Whitefish Bay	WI			X	X								
+The Jewish Community Center of Greatert Columbus	community center	Columbus	OH		X										
+Worcester JCC	community center	Worcester	MA		X	X									
+New Orleans JCC	community center	New Orleans	LA					X							
+Amherst JCC	community center	Amherst	NY				X								
+David Posnack JCC	community center	Davie	FL						X						
+JCC Indianapolis	community center	Indianapolis	IN						X						X
+Jewish Federation of Greater Harrisburg	community center	Harrisburg	PA						X						
+York JCC	community center	York	PA						X						
+Betty & Milton Katz JCC	community center	Cherry Hill	NJ						X						
+Asheville JCC	community center	Asheville	NC						X						
+Jewish Community Center of Greater Ann Arbor	community center	Ann Arbor	MI						X						
+Shames JCC On The Hudson	community center	Tarrytown	NY						X						
+JCC of Mid-Westchester	community center	Scarsdale	NY						X						
+JCC Staten Island	community center	Staten Island	NY						X						
+Mid-Island Y JCC	community center	Plainview	NY						X						
+JCC of Greater Baltimore	community center	Owings Mills	MD						X						
+Valley of the Sun JCC	community center	Phoenix	AZ						X						
+Oshman Family JCC	community center	Palo Alto	CA						X						
+Stroum JCC	community center	Mercer Island	WA						X						
+Jewish Community Center of Southern Nevada	community center	Las Vegas	NV						X					X	
+Merage JCC	community center	Irvine	CA						X						
+Providence JCC	community center	Providence	RI						X						
+Lubavitch Jewish Center	community center	Anchorage	AK						X						
+Westside JCC	community center	Los Angeles	CA						X				X		
+Tucson JCC	community center	Tucson	AZ						X						
+N.E. Miles Jewish Day School	school	Birmingham	AL						X						
+Posnack Jewish Day School	school	Davie	FL						X		X				
+Charles E. Smith Jewish Day School	school	Rockville	MD						X						
+The Hebrew Day School of Ann Arbor	school	Ann Arbor	MI						X						
+Charlotte Jewish Day School	school	Charlotte	NC						X						
+Perelman Jewish Day School	school	Wynnewood	PA						X						
+Gesher Jewish Day School	school	Fairfax	VA						X						
+Aleph Bet Jewish Day School	school	Annapolis	MD						X						
+Temple Emanu-El	school	Honolulu	HI						X						
+Harry & Rose Samson JCC	community center	Milwaukee	WI								X				X
+ Louis S. Wolk JCC of Greater Rochester	community center	Rochester	NY								X				X
+Mittelman / Mittleman JCC	community center	Portland	OR								X				
+Louisville JCC	community center	Louisville	KY									X			
+Addison-Penzak JCC	community center	Los Gatos	CA										X		
+Ronald C. Wornick Jewish Day School	school	Foster City	CA		X										
+Springfield JCC	community center	Springfield	MA							X					
+JCC of Greater Buffalo at Getzville	community center	Getzville	NY				X								
+JCC of Greater Vancouver	community center	Vancouver	British Columbia												X
+Miles Nadal Jewish Community Centre	community center	Toronto	Ontario								X				
