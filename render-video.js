@@ -11,7 +11,8 @@ const DateFontSize = 40
 const TitleFontSize = 90
 const NumberFontSize = 40
 
-process.env.FONTCONFIG_PATH = require('path').resolve(__dirname, '../raw-assets/fonts')
+process.env.PANGOCAIRO_BACKEND = 'fontconfig'
+process.env.FONTCONFIG_PATH = require('path').resolve(__dirname, './raw-data/fonts')
 
 const formatDateS = require('./app/formatDateS')
 const PlacesWithXY = require('./app/PlacesWithXY')
